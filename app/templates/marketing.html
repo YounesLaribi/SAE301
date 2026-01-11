@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <h2 class="display-5">Espace Marketing</h2>
+        <p class="text-muted">Gérez les ambiances sonores et les playlists de diffusion.</p>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Planning Widget -->
+    <div class="col-md-4">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="card-title mb-0">Planning d'Ambiance</h5>
+            </div>
+            <div class="card-body">
+                <form>
+                    <div class="mb-3">
+                        <label class="form-label">Matin (8h - 12h)</label>
+                        <select class="form-select">
+                            <option>Ambiance Calme (Pilote)</option>
+                            <option>Jazz Soft</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Après-midi (12h - 20h)</label>
+                        <select class="form-select">
+                            <option selected>Ambiance Énergique</option>
+                            <option>Pop Hits</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Enregistrer le Planning</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Playlists Table -->
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0">Gestion des Playlists</h5>
+            </div>
+            <div class="card-body">
+                <table class="table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Nom de la Playlist</th>
+                            <th>Version</th>
+                            <th>Dernière MAJ</th>
+                            <th>Statut</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for pl in playlists %}
+                        <tr>
+                            <td>{{ pl.nom }}</td>
+                            <td><span class="badge bg-secondary">{{ pl.version }}</span></td>
+                            <td>{{ pl.date_mise_a_jour.strftime('%d/%m/%Y %H:%M') }}</td>
+                            <td><span class="text-success">● Active</span></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="alert alert-warning">
+            <strong>Note SACEM :</strong> Toutes les musiques listées ci-dessus doivent être libres de droits ou
+            déclarées auprès de la SACEM.
+        </div>
+    </div>
+</div>
+{% endblock %}

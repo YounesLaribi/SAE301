@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h2">Tableau de Bord Général</h1>
+            <span class="badge bg-primary px-3 py-2">VUE D'ENSEMBLE</span>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-5">
+    <div class="col-md-4">
+        <div class="card bg-gradient-dark text-white shadow-lg border-0">
+            <div class="card-body text-center py-4">
+                <h6 class="text-secondary text-uppercase small">Réseau Local</h6>
+                <h2 class="mb-0">{{ total }} Lecteurs</h2>
+                <hr class="border-secondary">
+                <div class="d-flex justify-content-around">
+                    <small class="text-success">{{ up }} UP</small>
+                    <small class="text-danger">{{ ko }} KO</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-white shadow-sm border-0">
+            <div class="card-body text-center py-4">
+                <h6 class="text-muted text-uppercase small">Contenu Musical</h6>
+                <h2 class="mb-0">{{ total_tracks }} Titres</h2>
+                <p class="text-primary mb-0 mt-2"><a href="{{ url_for('admin.tracks') }}"
+                        class="text-decoration-none">Gérer la bibliothèque →</a></p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-white shadow-sm border-0">
+            <div class="card-body text-center py-4">
+                <h6 class="text-muted text-uppercase small">Alertes Récentes</h6>
+                <h2 class="mb-0 text-warning">{{ critical }}</h2>
+                <p class="text-primary mb-0 mt-2"><a href="{{ url_for('admin.monitoring_it') }}"
+                        class="text-decoration-none">Voir le journal IT →</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Sites Principaux</h5>
+            </div>
+            <div class="card-body">
+                <div class="list-group list-group-flush">
+                    {% for p in players[:5] %}
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="fw-bold">{{ p.nom }}</span><br>
+                            <small class="text-muted">{{ p.localisation }}</small>
+                        </div>
+                        <span
+                            class="badge bg-{{ 'success' if p.statut == 'ok' else 'danger' }}-subtle text-{{ 'success' if p.statut == 'ok' else 'danger' }}">
+                            {{ p.statut|upper }}
+                        </span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Accès Rapides</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('admin.marketing_dashboard') }}" class="btn btn-outline-primary text-start">🖥️
+                        Espace Marketing</a>
+                    <a href="{{ url_for('admin.sales_dashboard') }}" class="btn btn-outline-primary text-start">💰
+                        Espace Sales</a>
+                    <a href="{{ url_for('user.users_list') }}" class="btn btn-outline-secondary text-start">👤 Gérer
+                        Utilisateurs</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .bg-gradient-dark {
+        background: linear-gradient(135deg, #1a1c1e 0%, #2c3e50 100%);
+    }
+</style>
+{% endblock %}

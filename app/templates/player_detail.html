@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>{{ player.nom }} <small class="text-muted">{{ player.localisation }}</small></h1>
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">Statut</div>
+            <div class="card-body">
+                <p><strong>Statut:</strong> {{ player.statut|upper }}</p>
+                <p><strong>Dernière vue:</strong> {{ player.derniere_sync }}</p>
+                <p><strong>Historique:</strong> {{ player.historique }}</p>
+            </div>
+            {% if current_user.is_authenticated and current_user.role.nom == 'Admin' %}
+            <div class="card-footer">
+                <form action="{{ url_for('devices.delete_lecteur', lecteur_id=player.id_lecteur) }}" method="POST"
+                    onsubmit="return confirm('Supprimer ce lecteur ?');">
+                    <button type="submit" class="btn btn-danger btn-sm">Supprimer le Lecteur</button>
+                </form>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">Alertes Actives</div>
+            <div class="card-body">
+                {% if alerts %}
+                <ul class="list-group">
+                    {% for alert in alerts %}
+                    <li
+                        class="list-group-item d-flex justify-content-between align-items-center list-group-item-danger">
+                        {{ alert.message }}
+                        <!-- Resolution not implemented -->
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p class="text-success">Aucune alerte active.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

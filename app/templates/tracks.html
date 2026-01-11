@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Gérer les Titres</h2>
+<div class="card mb-4">
+    <div class="card-body">
+        <form action="{{ url_for('admin.add_track') }}" method="POST" class="row g-3">
+            <div class="col-auto">
+                <input type="text" class="form-control" name="title" placeholder="Titre" required>
+            </div>
+            <div class="col-auto">
+                <input type="text" class="form-control" name="url" placeholder="URL du Fichier" required>
+            </div>
+            <div class="col-auto">
+                <select class="form-select" name="kind">
+                    <option value="MUSIC">MUSIQUE</option>
+                    <option value="AD">PUB</option>
+                    <option value="URGENT">URGENT</option>
+                </select>
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-primary">Ajouter Titre</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Titre</th>
+            <th>Type</th>
+            <th>URL</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for track in tracks %}
+        <tr>
+            <td>{{ track.id_media }}</td>
+            <td>{{ track.nom }}</td>
+            <td>{{ track.type }}</td>
+            <td>
+                <!-- Accessing related music URL if available -->
+                {% if track.musiques %}
+                {{ track.musiques[0].url }}
+                {% else %}
+                -
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
