@@ -19,13 +19,20 @@ class UserService:
         db.session.commit()
         return True, f"Utilisateur {username} créé."
 
-    def delete_user(self, user_id):
+    def delete_user(self, user_id, deleter):
         user = Utilisateur.query.get(user_id)
         if not user:
              return False, "Utilisateur introuvable."
         
+        # Protection du compte 'admin' principal (personne ne peut le supprimer)
         if user.username == 'admin':
             return False, "Impossible de supprimer le super-admin."
+        
+        # Protection des autres admins : Seul le super-admin peut les supprimer
+        if user.role.nom == 'Admin':
+            # Si celui qui supprime n'est pas le super-admin 'admin'
+            if deleter.username != 'admin':
+                return False, "Seul l'admin principal peut supprimer un autre admin."
             
         db.session.delete(user)
         db.session.commit()

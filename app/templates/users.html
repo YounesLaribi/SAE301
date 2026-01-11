@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h2>Gestion des Utilisateurs</h2>
+<h2>Gestion des utilisateurs</h2>
 
 <div class="card mb-4">
-    <div class="card-header">Ajouter un Utilisateur</div>
+    <div class="card-header">Ajouter un utilisateur</div>
     <div class="card-body">
         <form action="{{ url_for('user.user_add') }}" method="POST" class="row g-3">
             <div class="col-md-4">
@@ -31,9 +31,9 @@
     <thead>
         <tr>
             <th>ID</th>
-            <th>Username</th>
+            <th>Nom d'utilisateur</th>
             <th>Rôle</th>
-            <th>Dernière Connexion</th>
+            <th>Dernière connexion</th>
             <th>Actions</th>
         </tr>
     </thead>
@@ -45,13 +45,17 @@
             <td><span class="badge bg-secondary">{{ user.role.nom }}</span></td>
             <td>{{ user.last_login.strftime('%d/%m/%Y %H:%M') if user.last_login else 'Jamais' }}</td>
             <td>
-                {% if user.username != 'admin' %}
+                {% if user.username != 'admin' and user.role.nom != 'Admin' %}
                 <form action="{{ url_for('user.user_delete', user_id=user.id_utilisateur) }}" method="POST"
                     style="display:inline;" onsubmit="return confirm('Êtes-vous sûr ?');">
                     <button type="submit" class="btn btn-sm btn-danger">Supprimer</button>
                 </form>
-                {% else %}
+                {% endif %}
+                {% if user.username == 'admin' %}
                 <span class="text-muted">Système</span>
+                {% endif %}
+                {% if user.role.nom == 'Admin' and user.username != 'admin' %}
+                <span class="text-muted">Protégé</span>
                 {% endif %}
             </td>
         </tr>

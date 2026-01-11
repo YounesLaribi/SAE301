@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
-<h2>Gérer les Titres</h2>
+<h2>Gérer les titres</h2>
 <div class="card mb-4">
     <div class="card-body">
         <form action="{{ url_for('admin.add_track') }}" method="POST" class="row g-3">
@@ -8,17 +8,17 @@
                 <input type="text" class="form-control" name="title" placeholder="Titre" required>
             </div>
             <div class="col-auto">
-                <input type="text" class="form-control" name="url" placeholder="URL du Fichier" required>
+                <input type="text" class="form-control" name="url" placeholder="URL du fichier" required>
             </div>
             <div class="col-auto">
                 <select class="form-select" name="kind">
-                    <option value="MUSIC">MUSIQUE</option>
-                    <option value="AD">PUB</option>
-                    <option value="URGENT">URGENT</option>
+                    <option value="MUSIC">Musique</option>
+                    <option value="AD">Pub</option>
+                    <option value="URGENT">Urgent</option>
                 </select>
             </div>
             <div class="col-auto">
-                <button type="submit" class="btn btn-primary">Ajouter Titre</button>
+                <button type="submit" class="btn btn-primary">Ajouter un titre</button>
             </div>
         </form>
     </div>

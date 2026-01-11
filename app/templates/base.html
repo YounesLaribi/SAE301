@@ -42,9 +42,10 @@
                             Administration
                         </a>
                         <ul class="dropdown-menu" aria-labelledby="adminDropdown">
-                            <li><a class="dropdown-item" href="{{ url_for('user.users_list') }}">Gérer Utilisateurs</a>
+                            <li><a class="dropdown-item" href="{{ url_for('user.users_list') }}">Gérer les
+                                    utilisateurs</a>
                             </li>
-                            <li><a class="dropdown-item" href="{{ url_for('admin.tracks') }}">Gérer les Titres</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('admin.tracks') }}">Gérer les titres</a></li>
                         </ul>
                     </li>
                     {% endif %}
