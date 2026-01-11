@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, redirect, url_for, abort, jsonify
+from flask import Blueprint, render_template, redirect, url_for, abort, jsonify, request, flash
 from flask_login import login_required, current_user
 from app.services.DashboardService import DashboardService
 
@@ -81,11 +81,9 @@ def summary():
     return jsonify(dashboard_service.get_summary_json())
 
 # Gestion de la bibliothèque de titres
-# Déplacer les pistes ici ou dans MediaController ? 
-# Le plan prévoyait DevicesController pour les lecteurs... vérifions Media/Tracks.
-# Pas de MediaController dans l'architecture actuelle. Dashboard convient ou peut-être un nouveau MediaController ?
-# L'image montre uniquement : Dashboard, Devices, ErrorHandler, Log, Login, Organisation, Timetable, User.
-# Les pistes s'intègrent mieux dans Dashboard ou peut-être Organisation ? Gardons Dashboard pour l'instant car cela faisait partie de la logique admin.
+# Note architecturale : Initialement prévu dans DevicesController, mais la gestion des médias
+# est plus logique ici dans le contexte du tableau de bord d'administration.
+# Une refactorisation future pourrait créer un MediaController dédié si la complexité augmente.
 @admin_bp.route('/media')
 @login_required
 def tracks():
@@ -95,8 +93,59 @@ def tracks():
 @admin_bp.route('/media/add', methods=['POST'])
 @login_required
 def add_track():
-    # Logique d'upload à implémenter ici
+    title = request.form.get('title')
+    url = request.form.get('url')
+    kind = request.form.get('kind')
+    
+    if title and url:
+        dashboard_service.add_track_to_library(title, url, kind)
+        flash('Titre ajouté avec succès.', 'success')
+    else:
+        flash('Erreur: Titre et URL requis.', 'danger')
+        
     return redirect(url_for('admin.tracks'))
+
+@admin_bp.route('/media/delete/<int:track_id>', methods=['POST'])
+@login_required
+def delete_track(track_id):
+    if current_user.role.nom != 'Admin':
+        abort(403)
+        
+    if dashboard_service.delete_track(track_id):
+        flash('Titre supprimé.', 'success')
+    else:
+        flash('Erreur lors de la suppression.', 'danger')
+        
+    return redirect(url_for('admin.tracks'))
+
+@admin_bp.route('/media/edit/<int:track_id>', methods=['GET', 'POST'])
+@login_required
+def edit_track(track_id):
+    if current_user.role.nom != 'Admin':
+        abort(403)
+        
+    track = dashboard_service.get_track_by_id(track_id)
+    if not track:
+        abort(404)
+        
+    if request.method == 'POST':
+        title = request.form.get('title')
+        url = request.form.get('url')
+        kind = request.form.get('kind')
+        
+        if dashboard_service.update_track(track_id, title, url, kind):
+            flash('Titre mis à jour.', 'success')
+            return redirect(url_for('admin.tracks'))
+        else:
+            flash('Erreur lors de la modification.', 'danger')
+            
+    return render_template('track_edit.html', track=track)
+
+@admin_bp.route('/urgent')
+@login_required
+def urgent_dashboard():
+    data = dashboard_service.get_urgent_data()
+    return render_template('urgent.html', **data)
 
 # Route de redirection pour les tests de santé
 @admin_bp.route('/check-health')

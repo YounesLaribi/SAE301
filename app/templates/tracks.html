@@ -31,6 +31,7 @@
             <th>Titre</th>
             <th>Type</th>
             <th>URL</th>
+            <th>Actions</th>
         </tr>
     </thead>
     <tbody>
@@ -38,13 +39,23 @@
         <tr>
             <td>{{ track.id_media }}</td>
             <td>{{ track.nom }}</td>
-            <td>{{ track.type }}</td>
+            <td>{{ track.type|upper }}</td>
             <td>
                 <!-- Accessing related music URL if available -->
                 {% if track.musiques %}
                 {{ track.musiques[0].url }}
                 {% else %}
                 -
+                {% endif %}
+            </td>
+            <td>
+                {% if current_user.role.nom == 'Admin' %}
+                <a href="{{ url_for('admin.edit_track', track_id=track.id_media) }}"
+                    class="btn btn-sm btn-outline-primary">Modifier</a>
+                <form action="{{ url_for('admin.delete_track', track_id=track.id_media) }}" method="POST"
+                    style="display:inline;" onsubmit="return confirm('Supprimer ce titre ?');">
+                    <button type="submit" class="btn btn-sm btn-danger">Supprimer</button>
+                </form>
                 {% endif %}
             </td>
         </tr>

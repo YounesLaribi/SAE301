@@ -2,4 +2,4 @@ from flask import Blueprint
 
 organisation_bp = Blueprint('organisation', __name__)
 
-# Placeholder for Organisation/Role management logic
+# Emplacement pour la logique de gestion de l'organisation et des rôles
