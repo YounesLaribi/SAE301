@@ -36,17 +36,8 @@ def create_app(config_class=Config):
     from app.controllers.ErrorHandler import errors_bp
     app.register_blueprint(errors_bp)
     
-    # Placeholders (Optional registration if empty)
-    # from app.controllers.LogController import log_bp
-    # app.register_blueprint(log_bp)
-    # from app.controllers.OrganisationController import organisation_bp
-    # app.register_blueprint(organisation_bp)
-    # from app.controllers.TimetableController import timetable_bp
-    # app.register_blueprint(timetable_bp)
 
-    # Affichage des routes au démarrage (pour le débogage)
-    print("All routes registered:")
-    # for rule in app.url_map.iter_rules():
-    #     print(f" - {rule}")
+
+
 
     return app

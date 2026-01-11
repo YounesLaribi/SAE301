@@ -3,8 +3,8 @@ from flask_login import login_user, logout_user, login_required
 from app.models.Utilisateur import Utilisateur
 
 # Ce module gère l'authentification et les sessions utilisateurs.
-# Renamed from auth_bp to login_bp or keep auth_bp? Let's keep auth_bp to minimize confusion in templates if they use url_for('auth.login').
-# BUT file is LoginController. Let's use 'auth' as blueprint name to match existing url_for calls likely in templates.
+# Définition du Blueprint 'auth' pour gérer les routes de connexion/déconnexion.
+# Le nom 'auth' est conservé pour maintenir la compatibilité avec les templates (url_for('auth.login')).
 auth_bp = Blueprint('auth', __name__)
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
@@ -25,7 +25,7 @@ def login():
         
         if user:
             login_user(user) # Flask-Login crée la session
-            # Note: 'admin.dashboard' might need to change if I rename the blueprint in DashboardController
+            # Redirection vers le tableau de bord administrateur après connexion réussie
             return redirect(url_for('admin.dashboard')) 
             
         # Alerte de sécurité en cas d'échec

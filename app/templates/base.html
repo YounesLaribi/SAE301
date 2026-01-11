@@ -30,6 +30,11 @@
                     {% endif %}
                     {% if current_user.role.nom == 'Admin' %}
                     <li class="nav-item">
+                        <a class="nav-link text-danger" href="{{ url_for('admin.urgent_dashboard') }}">Urgences</a>
+                    </li>
+                    {% endif %}
+                    {% if current_user.role.nom == 'Admin' %}
+                    <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('admin.monitoring_it') }}">Monitoring IT</a>
                     </li>
                     {% endif %}

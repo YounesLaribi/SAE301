@@ -43,8 +43,7 @@ def delete_lecteur(lecteur_id):
 
 # --- Routes API (Proviennent de api.py) ---
 
-# Aide à l'authentification - N'est plus utilisé directement ici, mais conservé si besoin ou à supprimer.
-# Supprimé car il n'était utilisé qu'en interne dans ce fichier et remplacé par le service.
+
 
 
 @api_bp.route('/players/<int:player_id>/heartbeat', methods=['POST'])
@@ -67,7 +66,7 @@ def get_main_playlist(player_id):
 
 @api_bp.route('/players/<int:player_id>/playlists/fallback', methods=['GET'])
 def get_fallback_playlist(player_id):
-    # Dummy vide pour le repli (fallback)
+    # Liste vide par défaut pour le repli (fallback)
     return jsonify([])
 
 @api_bp.route('/players/<int:player_id>/commands', methods=['GET'])

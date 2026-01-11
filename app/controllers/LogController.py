@@ -2,4 +2,4 @@ from flask import Blueprint, render_template
 
 log_bp = Blueprint('log', __name__)
 
-# Placeholder for Log/Alert management logic
+# Emplacement pour la logique de gestion des logs et des alertes
