@@ -16,7 +16,7 @@
             <div class="card-footer">
                 <form action="{{ url_for('devices.delete_lecteur', lecteur_id=player.id_lecteur) }}" method="POST"
                     onsubmit="return confirm('Supprimer ce lecteur ?');">
-                    <button type="submit" class="btn btn-danger btn-sm">Supprimer le Lecteur</button>
+                    <button type="submit" class="btn btn-danger btn-sm">Supprimer le lecteur</button>
                 </form>
             </div>
             {% endif %}
@@ -25,7 +25,7 @@
 
     <div class="col-md-6">
         <div class="card">
-            <div class="card-header">Alertes Actives</div>
+            <div class="card-header">Alertes actives</div>
             <div class="card-body">
                 {% if alerts %}
                 <ul class="list-group">
