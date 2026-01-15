@@ -45,7 +45,7 @@
             <td><span class="badge bg-secondary">{{ user.role.nom }}</span></td>
             <td>{{ user.last_login.strftime('%d/%m/%Y %H:%M') if user.last_login else 'Jamais' }}</td>
             <td>
-                {% if user.username != 'admin' and user.role.nom != 'Admin' %}
+                {% if user.username != 'admin' and (user.role.nom != 'Admin' or current_user.username == 'admin') %}
                 <form action="{{ url_for('user.user_delete', user_id=user.id_utilisateur) }}" method="POST"
                     style="display:inline;" onsubmit="return confirm('Êtes-vous sûr ?');">
                     <button type="submit" class="btn btn-sm btn-danger">Supprimer</button>
@@ -54,7 +54,7 @@
                 {% if user.username == 'admin' %}
                 <span class="text-muted">Système</span>
                 {% endif %}
-                {% if user.role.nom == 'Admin' and user.username != 'admin' %}
+                {% if user.role.nom == 'Admin' and user.username != 'admin' and current_user.username != 'admin' %}
                 <span class="text-muted">Protégé</span>
                 {% endif %}
             </td>
