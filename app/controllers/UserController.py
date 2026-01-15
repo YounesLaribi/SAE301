@@ -66,7 +66,7 @@ def user_delete(user_id):
     """
     Supprime un compte utilisateur, sauf le compte 'admin' de secours.
     """
-    success, message = user_service.delete_user(user_id)
+    success, message = user_service.delete_user(user_id, current_user)
     
     flash(message)
     return redirect(url_for('user.users_list'))
