@@ -30,13 +30,27 @@ class DeviceService:
         if data and data.get('is_audio_playing') is False:
              # La logique pour l'alerte pourrait aller ici
              pass
+        broadcast_msg = None
+        # Cas 1 : URGENT (Ne pas effacer, boucle infinie)
+        if "URGENT:" in lecteur.historique:
+             broadcast_msg = lecteur.historique.split("URGENT:")[1].strip()
+             # On ajoute un préfixe spécial pour que le client sache que c'est HARDCORE
+             broadcast_msg = f"URGENT:{broadcast_msg}"
+             
+        # Cas 2 : BROADCAST standard (One shot)
+        elif "BROADCAST:" in lecteur.historique:
+            broadcast_msg = lecteur.historique.split("BROADCAST:")[1].strip()
+            # On marque le message comme lu/livré dans l'historique pour éviter qu'il boucle à l'infini
+            lecteur.historique = f"Dernière diffusion : {broadcast_msg} ({datetime.utcnow().strftime('%H:%M:%S')})"
+            
         db.session.commit()
-        
+
         return {
             "ok": True,
             "server_time": datetime.utcnow().isoformat(),
-            "needs_sync_main": False,
-            "needs_sync_fallback": False
+            "needs_sync_main": bool(broadcast_msg), 
+            "needs_sync_fallback": False,
+            "broadcast_command": broadcast_msg
         }
         
     def get_main_playlist_tracks(self, player_id):

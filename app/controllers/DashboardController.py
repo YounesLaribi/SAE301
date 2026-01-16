@@ -70,6 +70,58 @@ def sales_dashboard():
     data = dashboard_service.get_sales_data()
     return render_template('sales.html', **data)
 
+@admin_bp.route('/broadcast/stop', methods=['POST'])
+@login_required
+def stop_broadcast():
+    # Arrêt Global (Comportement Marketing/Mute)
+    dashboard_service.trigger_stop_music()
+    flash('Arrêt d\'urgence envoyé à tous les lecteurs.', 'danger')
+    return redirect(request.referrer or url_for('admin.dashboard'))
+
+@admin_bp.route('/sales/stop', methods=['POST'])
+@login_required
+def stop_sales():
+    # Arrêt Sales = Annulation de l'annonce en cours (Reprise musique)
+    dashboard_service.trigger_cancel_broadcast()
+    flash('Diffusion Sales annulée. Reprise de la musique.', 'info')
+    return redirect(url_for('admin.sales_dashboard'))
+
+@admin_bp.route('/marketing/stop', methods=['POST'])
+@login_required
+def stop_marketing():
+    # Arrêt Marketing = Silence complet
+    dashboard_service.trigger_stop_music()
+    flash('Musique arrêtée (Silence).', 'warning')
+    return redirect(url_for('admin.marketing_dashboard'))
+
+@admin_bp.route('/marketing/planning/save', methods=['POST'])
+@login_required
+def save_planning():
+    matin = request.form.get('matin')
+    apres_midi = request.form.get('apres_midi')
+    # Pour l'instant, on simule l'enregistrement
+    flash(f'Planning mis à jour : Matin [{matin}] / Après-midi [{apres_midi}]', 'success')
+    return redirect(url_for('admin.marketing_dashboard'))
+
+@admin_bp.route('/urgent/stop', methods=['POST'])
+@login_required
+def stop_urgent():
+    # Arrêt Urgent = Fin de l'alerte (Reprise musique)
+    dashboard_service.trigger_stop_urgent()
+    flash('Fin de l\'alerte urgente. Reprise de la musique.', 'success')
+    return redirect(url_for('admin.urgent_dashboard'))
+
+@admin_bp.route('/sales/broadcast', methods=['POST'])
+@login_required
+def sales_broadcast():
+    message = request.form.get('message')
+    if message:
+        dashboard_service.trigger_broadcast(message)
+        flash(f'Diffusion lancée : {message}', 'warning') # Warning pour le jaune
+    else:
+        flash('Erreur : Aucun message sélectionné.', 'danger')
+    return redirect(url_for('admin.sales_dashboard'))
+
 # Endpoint API Interne pour récupérer les statistiques en JSON
 # Conservé dans Dashboard car utilisé par le tableau de bord
 @admin_bp.route('/api/admin/summary')
@@ -146,6 +198,17 @@ def edit_track(track_id):
 def urgent_dashboard():
     data = dashboard_service.get_urgent_data()
     return render_template('urgent.html', **data)
+
+@admin_bp.route('/urgent/broadcast', methods=['POST'])
+@login_required
+def urgent_broadcast():
+    media_id = request.form.get('message')
+    if media_id:
+        dashboard_service.trigger_urgent_broadcast(media_id)
+        flash('ALERTE URGENTE DÉCLENCHÉE', 'danger')
+    else:
+        flash('Erreur : Aucun message sélectionné.', 'danger')
+    return redirect(url_for('admin.urgent_dashboard'))
 
 # Route de redirection pour les tests de santé
 @admin_bp.route('/check-health')

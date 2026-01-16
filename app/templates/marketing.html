@@ -16,19 +16,24 @@
                 <h5 class="card-title mb-0">Planning d'ambiance</h5>
             </div>
             <div class="card-body">
-                <form>
+                <form action="{{ url_for('admin.stop_marketing') }}" method="POST" class="mb-4">
+                    <button type="submit" class="btn btn-danger w-100">🛑 STOP MUSIQUE (SILENCE)</button>
+                </form>
+                <form action="{{ url_for('admin.save_planning') }}" method="POST">
                     <div class="mb-3">
                         <label class="form-label">Matin (8h - 12h)</label>
-                        <select class="form-select">
-                            <option>Ambiance calme (pilote)</option>
-                            <option>Jazz Soft</option>
+                        <select class="form-select" name="matin">
+                            {% for p in playlists %}
+                            <option value="{{ p.nom }}">{{ p.nom }} (v{{ p.version}})</option>
+                            {% endfor %}
                         </select>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Après-midi (12h - 20h)</label>
-                        <select class="form-select">
-                            <option selected>Ambiance énergique</option>
-                            <option>Pop Hits</option>
+                        <select class="form-select" name="apres_midi">
+                            {% for p in playlists %}
+                            <option value="{{ p.nom }}">{{ p.nom }} (v{{ p.version}})</option>
+                            {% endfor %}
                         </select>
                     </div>
                     <button type="submit" class="btn btn-primary w-100">Enregistrer le planning</button>

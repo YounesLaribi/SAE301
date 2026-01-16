@@ -7,7 +7,27 @@ from app.extensions import db
 from datetime import datetime, time
 
 class DashboardService:
+    def _update_player_statuses(self):
+        # Timeout de 15 secondes pour considérer un lecteur comme déconnecté
+        TIMEOUT_SECONDS = 15
+        lecteurs = Lecteur.query.all()
+        now = datetime.utcnow()
+        
+        for l in lecteurs:
+            if l.derniere_sync:
+                # Calcul basique, on suppose que les dates sont en UTC ou naïves cochées
+                delta = now - l.derniere_sync
+                if delta.total_seconds() > TIMEOUT_SECONDS:
+                    l.statut = 'ko'
+                else:
+                    l.statut = 'ok'
+            else:
+                l.statut = 'ko'
+        
+        db.session.commit()
+
     def get_admin_stats(self):
+        self._update_player_statuses()
         return {
             'total': Lecteur.query.count(),
             'up': Lecteur.query.filter_by(statut='ok').count(),
@@ -18,6 +38,7 @@ class DashboardService:
         }
 
     def get_monitoring_data(self):
+        self._update_player_statuses()
         lecteurs = Lecteur.query.all()
         return {
              'players': lecteurs,
@@ -43,6 +64,7 @@ class DashboardService:
         return Media.query.all()
     
     def get_summary_json(self):
+        self._update_player_statuses()
         lecteurs = Lecteur.query.all()
         return {
             'players': [{
@@ -148,3 +170,56 @@ class DashboardService:
         return {
             'urgent_tracks': Media.query.filter_by(type='urgent').all()
         }
+
+    def trigger_broadcast(self, message):
+        """
+        Déclenche une diffusion prioritaire sur tous les lecteurs.
+        Utilise le champ 'historique' comme canal de commande temporaire.
+        """
+        lecteurs = Lecteur.query.all()
+        for l in lecteurs:
+            l.historique = f"BROADCAST: {message}"
+        db.session.commit()
+        return True
+
+    def trigger_stop_music(self):
+        """
+        Envoie un ordre d'arrêt immédiat à tous les lecteurs (MUTE).
+        Utilisé par Marketing et Stop Général.
+        """
+        return self.trigger_broadcast("STOP")
+
+    def trigger_cancel_broadcast(self):
+        """
+        Annule la diffusion en cours (Sales) et reprend la musique normale.
+        """
+        return self.trigger_broadcast("CANCEL")
+
+    def trigger_stop_urgent(self):
+        """
+        Arrête l'urgence en cours et reprend la musique normale.
+        """
+        lecteurs = Lecteur.query.all()
+        for l in lecteurs:
+            # On nettoie l'historique s'il contient URGENT
+            if "URGENT:" in l.historique:
+                l.historique = "BROADCAST: CANCEL"
+            else:
+                l.historique = "BROADCAST: CANCEL"
+        db.session.commit()
+        return True
+
+    def trigger_urgent_broadcast(self, media_id):
+        """
+        Déclenche une diffusion URGENTE (boucle) sur tous les lecteurs.
+        """
+        media = Media.query.get(media_id)
+        if not media:
+            return False
+            
+        message = f"URGENT:{media.nom}"
+        lecteurs = Lecteur.query.all()
+        for l in lecteurs:
+            l.historique = message
+        db.session.commit()
+        return True

@@ -18,10 +18,10 @@
             <div class="card-body">
                 <p class="small text-muted">Avertissement : Cette action coupera immédiatement le programme en cours sur
                     TOUS les lecteurs.</p>
-                <form>
+                <form action="{{ url_for('admin.urgent_broadcast') }}" method="POST">
                     <div class="mb-3">
                         <label class="form-label">Choisir le message prioritaire</label>
-                        <select class="form-select border-danger">
+                        <select class="form-select border-danger" name="message">
                             {% for track in urgent_tracks %}
                             <option value="{{ track.id_media }}">{{ track.nom }}</option>
                             {% else %}
@@ -29,7 +29,10 @@
                             {% endfor %}
                         </select>
                     </div>
-                    <button type="submit" class="btn btn-danger w-100 py-3 fw-bold">DIFFUSER MAINTENANT</button>
+                    <button type="submit" class="btn btn-danger w-100 py-3 fw-bold mb-3">DIFFUSER MAINTENANT</button>
+                </form>
+                <form action="{{ url_for('admin.stop_urgent') }}" method="POST">
+                    <button type="submit" class="btn btn-success w-100">✅ FIN DE L'ALERTE (REPRISE MUSIQUE)</button>
                 </form>
             </div>
         </div>

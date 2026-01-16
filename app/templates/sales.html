@@ -18,16 +18,20 @@
             <div class="card-body">
                 <p class="small text-muted">Sélectionnez un message pour le diffuser immédiatement sur tous les
                     lecteurs, coupant la musique en cours.</p>
-                <form>
+                <form action="{{ url_for('admin.sales_broadcast') }}" method="POST">
                     <div class="mb-3">
                         <label class="form-label">Choisir l'annonce</label>
-                        <select class="form-select border-warning">
-                            <option>Flash Promo -10% immédiat</option>
-                            <option>Message de bienvenue</option>
-                            <option>Annonce fermeture</option>
+                        <select class="form-select border-warning" name="message">
+                            <option value="Flash Promo -10% immédiat">Flash Promo -10% immédiat</option>
+                            <option value="Message de bienvenue">Message de bienvenue</option>
+                            <option value="Annonce fermeture">Annonce fermeture</option>
                         </select>
                     </div>
-                    <button type="submit" class="btn btn-warning w-100 py-3 fw-bold">Diffuser maintenant</button>
+                    <button type="submit" class="btn btn-warning w-100 py-3 fw-bold mb-3">Diffuser maintenant</button>
+                </form>
+                <form action="{{ url_for('admin.stop_sales') }}" method="POST">
+                    <button type="submit" class="btn btn-outline-danger w-100">Arrêter l'annonce (Reprise
+                        musique)</button>
                 </form>
             </div>
         </div>
