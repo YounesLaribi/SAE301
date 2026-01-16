@@ -16,19 +16,26 @@
                 <h5 class="card-title mb-0">Planning d'ambiance</h5>
             </div>
             <div class="card-body">
-                <form>
+                <form action="{{ url_for('admin.stop_marketing') }}" method="POST" class="mb-4">
+                    <button type="submit" class="btn btn-danger w-100">🛑 STOP MUSIQUE (SILENCE)</button>
+                </form>
+                <form action="{{ url_for('admin.save_planning') }}" method="POST">
                     <div class="mb-3">
                         <label class="form-label">Matin (8h - 12h)</label>
-                        <select class="form-select">
-                            <option>Ambiance calme (pilote)</option>
-                            <option>Jazz Soft</option>
+                        <select class="form-select" name="matin">
+                            <option value="Aucun">-- Sélectionner une ambiance --</option>
+                            {% for m in medias %}
+                            <option value="{{ m.nom }}">{{ m.nom }}</option>
+                            {% endfor %}
                         </select>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Après-midi (12h - 20h)</label>
-                        <select class="form-select">
-                            <option selected>Ambiance énergique</option>
-                            <option>Pop Hits</option>
+                        <select class="form-select" name="apres_midi">
+                            <option value="Aucun">-- Sélectionner une ambiance --</option>
+                            {% for m in medias %}
+                            <option value="{{ m.nom }}">{{ m.nom }}</option>
+                            {% endfor %}
                         </select>
                     </div>
                     <button type="submit" class="btn btn-primary w-100">Enregistrer le planning</button>
@@ -37,29 +44,52 @@
         </div>
     </div>
 
-    <!-- Playlists Table -->
+    <!-- Music Catalog -->
     <div class="col-md-8">
         <div class="card shadow-sm">
             <div class="card-header bg-white">
-                <h5 class="card-title mb-0">Gestion des playlists</h5>
+                <h5 class="card-title mb-0">Catalogue Musical Disponible</h5>
             </div>
             <div class="card-body">
-                <table class="table align-middle">
+                <table class="table align-middle table-hover">
                     <thead>
                         <tr>
-                            <th>Nom de la playlist</th>
-                            <th>Version</th>
-                            <th>Dernière mise à jour</th>
-                            <th>Statut</th>
+                            <th>Titre / Ambiance</th>
+                            <th>Genre</th>
+                            <th>Disponibilité</th>
+                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {% for pl in playlists %}
+                        {% for m in medias %}
                         <tr>
-                            <td>{{ pl.nom }}</td>
-                            <td><span class="badge bg-secondary">{{ pl.version }}</span></td>
-                            <td>{{ pl.date_mise_a_jour.strftime('%d/%m/%Y %H:%M') }}</td>
-                            <td><span class="text-success">● Active</span></td>
+                            <td>
+                                <span class="fw-bold">{{ m.nom }}</span>
+                            </td>
+                            <td>
+                                <span class="badge bg-info text-dark">{{ m.type|upper }}</span>
+                            </td>
+                            <td>
+                                {% if m.actif %}
+                                <span class="text-success"><i class="bi bi-check-circle-fill"></i> Disponible</span>
+                                {% else %}
+                                <span class="text-muted"><i class="bi bi-dash-circle"></i> Archivé</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if m.musiques and m.musiques[0].url %}
+                                <a href="{{ m.musiques[0].url }}" target="_blank"
+                                    class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-play-fill"></i> Écouter
+                                </a>
+                                {% else %}
+                                <button class="btn btn-sm btn-outline-secondary" disabled>Indisponible</button>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="4" class="text-center text-muted">Aucune musique dans le catalogue.</td>
                         </tr>
                         {% endfor %}
                     </tbody>
