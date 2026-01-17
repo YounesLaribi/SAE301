@@ -89,9 +89,10 @@ def stop_sales():
 @admin_bp.route('/marketing/stop', methods=['POST'])
 @login_required
 def stop_marketing():
-    # Arrêt Marketing = Silence complet
+    # Arrêt Marketing = Désactivation du planning + Silence
+    dashboard_service.disable_planning()
     dashboard_service.trigger_stop_music()
-    flash('Musique arrêtée (Silence).', 'warning')
+    flash('Mode Automatique DÉSACTIVÉ. Musique arrêtée (Silence).', 'warning')
     return redirect(url_for('admin.marketing_dashboard'))
 
 @admin_bp.route('/marketing/planning/save', methods=['POST'])
@@ -99,8 +100,30 @@ def stop_marketing():
 def save_planning():
     matin = request.form.get('matin')
     apres_midi = request.form.get('apres_midi')
-    # Pour l'instant, on simule l'enregistrement
-    flash(f'Planning mis à jour : Matin [{matin}] / Après-midi [{apres_midi}]', 'success')
+    
+    dashboard_service.save_planning(matin, apres_midi)
+    
+    # Récupération des noms pour l'affichage (Plus joli que les ID)
+    nom_matin = "Aucun"
+    nom_pm = "Aucun"
+    
+    if matin:
+        m = dashboard_service.get_track_by_id(int(matin))
+        if m: nom_matin = m.nom
+        
+    if apres_midi:
+        m = dashboard_service.get_track_by_id(int(apres_midi))
+        if m: nom_pm = m.nom
+    
+    flash(f'Mode Automatique ACTIVÉ. Matin: {nom_matin} / Après-midi: {nom_pm}', 'success')
+    return redirect(url_for('admin.marketing_dashboard'))
+
+@admin_bp.route('/marketing/reset', methods=['POST'])
+@login_required
+def reset_players():
+    # Réinitialisation forcée (Nettoyage historique + Silence)
+    dashboard_service.reset_all_players()
+    flash('Tous les lecteurs ont été réinitialisés (Historique effacé, Son coupé).', 'info')
     return redirect(url_for('admin.marketing_dashboard'))
 
 @admin_bp.route('/urgent/stop', methods=['POST'])
@@ -114,10 +137,12 @@ def stop_urgent():
 @admin_bp.route('/sales/broadcast', methods=['POST'])
 @login_required
 def sales_broadcast():
-    message = request.form.get('message')
-    if message:
-        dashboard_service.trigger_broadcast(message)
-        flash(f'Diffusion lancée : {message}', 'warning') # Warning pour le jaune
+    media_id = request.form.get('message')
+    if media_id:
+        if dashboard_service.trigger_ad_broadcast(media_id):
+             flash('Diffusion publicitaire lancée.', 'warning')
+        else:
+             flash('Erreur : Média introuvable.', 'danger')
     else:
         flash('Erreur : Aucun message sélectionné.', 'danger')
     return redirect(url_for('admin.sales_dashboard'))

@@ -13,33 +13,49 @@
     <div class="col-md-4">
         <div class="card shadow-sm mb-4">
             <div class="card-header bg-primary text-white">
-                <h5 class="card-title mb-0">Planning d'ambiance</h5>
+                <h5 class="card-title mb-0">Diffusion</h5>
             </div>
             <div class="card-body">
-                <form action="{{ url_for('admin.stop_marketing') }}" method="POST" class="mb-4">
-                    <button type="submit" class="btn btn-danger w-100">🛑 STOP MUSIQUE (SILENCE)</button>
-                </form>
+                <!-- Formulaire Planning -->
                 <form action="{{ url_for('admin.save_planning') }}" method="POST">
                     <div class="mb-3">
-                        <label class="form-label">Matin (8h - 12h)</label>
+                        <label class="form-label fw-bold"><i class="bi bi-sunrise"></i> Matin (8h - 12h)</label>
                         <select class="form-select" name="matin">
-                            <option value="Aucun">-- Sélectionner une ambiance --</option>
+                            <option value="">-- Aucune (Silence) --</option>
                             {% for m in medias %}
-                            <option value="{{ m.nom }}">{{ m.nom }}</option>
+                            <option value="{{ m.id_media }}" {% if planning and planning.matin==m.id_media %}selected{%
+                                endif %}>
+                                {{ m.nom }}
+                            </option>
                             {% endfor %}
                         </select>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Après-midi (12h - 20h)</label>
+                        <label class="form-label fw-bold"><i class="bi bi-sunset"></i> Après-midi (12h - 20h)</label>
                         <select class="form-select" name="apres_midi">
-                            <option value="Aucun">-- Sélectionner une ambiance --</option>
+                            <option value="">-- Aucune (Silence) --</option>
                             {% for m in medias %}
-                            <option value="{{ m.nom }}">{{ m.nom }}</option>
+                            <option value="{{ m.id_media }}" {% if planning and planning.apres_midi==m.id_media
+                                %}selected{% endif %}>
+                                {{ m.nom }}
+                            </option>
                             {% endfor %}
                         </select>
                     </div>
-                    <button type="submit" class="btn btn-primary w-100">Enregistrer le planning</button>
+                    <button type="submit" class="btn btn-success w-100 fw-bold mb-3">
+                        <i class="bi bi-check-circle"></i> ACTIVER LE MODE AUTO (ON)
+                    </button>
                 </form>
+
+                <!-- Bouton STOP / OFF -->
+                <form action="{{ url_for('admin.stop_marketing') }}" method="POST" class="mb-3">
+                    <button type="submit" class="btn btn-danger w-100 fw-bold">
+                        <i class="bi bi-power"></i> DÉSACTIVER (OFF) & STOP
+                    </button>
+                    <div class="form-text text-muted text-center">Coupe le son et désactive le planning.</div>
+                </form>
+
+                <hr>
             </div>
         </div>
     </div>

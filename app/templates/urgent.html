@@ -4,7 +4,7 @@
 <div class="row mb-4">
     <div class="col-md-12">
         <h2 class="display-5 text-danger">Messages prioritaires</h2>
-        <p class="text-muted">Gestion des urgences et diffusions prioritaires (override).</p>
+        <p class="text-muted">Gestion des urgences et diffusions prioritaires.</p>
     </div>
 </div>
 
@@ -13,7 +13,7 @@
     <div class="col-md-5">
         <div class="card border-danger shadow-lg mb-4">
             <div class="card-header bg-danger text-white">
-                <h5 class="card-title mb-0">Diffusion immédiate (Override)</h5>
+                <h5 class="card-title mb-0">Diffusion immédiate</h5>
             </div>
             <div class="card-body">
                 <p class="small text-muted">Avertissement : Cette action coupera immédiatement le programme en cours sur
@@ -32,7 +32,9 @@
                     <button type="submit" class="btn btn-danger w-100 py-3 fw-bold mb-3">DIFFUSER MAINTENANT</button>
                 </form>
                 <form action="{{ url_for('admin.stop_urgent') }}" method="POST">
-                    <button type="submit" class="btn btn-success w-100">✅ FIN DE L'ALERTE (REPRISE MUSIQUE)</button>
+                    <button type="submit" class="btn btn-danger w-100 fw-bold">
+                        <i class="bi bi-power"></i> ARRÊTER L'ALERTE & REPRISE
+                    </button>
                 </form>
             </div>
         </div>
@@ -42,7 +44,7 @@
     <div class="col-md-7">
         <div class="card shadow-sm">
             <div class="card-header bg-white">
-                <h5 class="card-title mb-0">Bibliothèque des urgences</h5>
+                <h5 class="card-title mb-0">Catalogue des urgences</h5>
             </div>
             <div class="card-body">
                 <table class="table align-middle">
@@ -50,7 +52,7 @@
                         <tr>
                             <th>Titre</th>
                             <th>Fichier</th>
-                            <th>État</th>
+                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -58,7 +60,14 @@
                         <tr>
                             <td>{{ track.nom }}</td>
                             <td>{{ track.musiques[0].url if track.musiques else '-' }}</td>
-                            <td><span class="badge bg-danger">PRET</span></td>
+                            <td>
+                                {% if track.musiques and track.musiques[0].url %}
+                                <a href="{{ track.musiques[0].url }}" target="_blank"
+                                    class="btn btn-sm btn-outline-danger">
+                                    <i class="bi bi-play-fill"></i> Écouter
+                                </a>
+                                {% endif %}
+                            </td>
                         </tr>
                         {% else %}
                         <tr>

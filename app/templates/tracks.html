@@ -49,6 +49,12 @@
                 {% endif %}
             </td>
             <td>
+                {% if track.musiques and track.musiques[0].url %}
+                <a href="{{ track.musiques[0].url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-play-fill"></i> Écouter
+                </a>
+                {% endif %}
+
                 {% if current_user.role.nom == 'Admin' %}
                 <a href="{{ url_for('admin.edit_track', track_id=track.id_media) }}"
                     class="btn btn-sm btn-outline-primary">Modifier</a>

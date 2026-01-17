@@ -33,7 +33,7 @@ class DashboardService:
             'up': Lecteur.query.filter_by(statut='ok').count(),
             'ko': Lecteur.query.filter_by(statut='ko').count(),
             'critical': Alerte.query.count(),
-            'total_tracks': Media.query.filter_by(type='music').count(),
+            'total_tracks': Media.query.count(),
             'players': Lecteur.query.all()
         }
 
@@ -52,7 +52,8 @@ class DashboardService:
     def get_marketing_data(self):
         return {
             'medias': Media.query.filter_by(type='music').all(),
-            'playlists': Playlist.query.all()
+            'playlists': Playlist.query.all(),
+            'planning': self.get_planning()
         }
 
     def get_sales_data(self):
@@ -171,55 +172,100 @@ class DashboardService:
             'urgent_tracks': Media.query.filter_by(type='urgent').all()
         }
 
-    def trigger_broadcast(self, message):
-        """
-        Déclenche une diffusion prioritaire sur tous les lecteurs.
-        Utilise le champ 'historique' comme canal de commande temporaire.
-        """
+    def _send_to_all_history(self, text):
+        """Helper pour écrire dans l'historique de tous les lecteurs"""
         lecteurs = Lecteur.query.all()
         for l in lecteurs:
-            l.historique = f"BROADCAST: {message}"
+            l.historique = text
         db.session.commit()
         return True
 
     def trigger_stop_music(self):
-        """
-        Envoie un ordre d'arrêt immédiat à tous les lecteurs (MUTE).
-        Utilisé par Marketing et Stop Général.
-        """
-        return self.trigger_broadcast("STOP")
+        return self._send_to_all_history("BROADCAST: STOP")
 
     def trigger_cancel_broadcast(self):
-        """
-        Annule la diffusion en cours (Sales) et reprend la musique normale.
-        """
-        return self.trigger_broadcast("CANCEL")
+        return self._send_to_all_history("BROADCAST: CANCEL")
 
     def trigger_stop_urgent(self):
-        """
-        Arrête l'urgence en cours et reprend la musique normale.
-        """
-        lecteurs = Lecteur.query.all()
-        for l in lecteurs:
-            # On nettoie l'historique s'il contient URGENT
-            if "URGENT:" in l.historique:
-                l.historique = "BROADCAST: CANCEL"
-            else:
-                l.historique = "BROADCAST: CANCEL"
-        db.session.commit()
-        return True
+        # Pour le stop urgent, on force CANCEL partout
+        return self.trigger_cancel_broadcast()
+
+    def trigger_ad_broadcast(self, media_id):
+        """Diffusion publicitaire (Sales)"""
+        media = Media.query.get(media_id)
+        if not media: return False
+        
+        # Récupération URL
+        url = "http://perdu.com" # Fallback
+        if media.musiques: url = media.musiques[0].url
+        
+        msg = f"BROADCAST:{media.nom}|{url}"
+        return self._send_to_all_history(msg)
 
     def trigger_urgent_broadcast(self, media_id):
-        """
-        Déclenche une diffusion URGENTE (boucle) sur tous les lecteurs.
-        """
+        """Diffusion Urgente (Radio Infinity Loop)"""
         media = Media.query.get(media_id)
-        if not media:
-            return False
-            
-        message = f"URGENT:{media.nom}"
+        if not media: return False
+        
+        url = "http://perdu.com"
+        if media.musiques: url = media.musiques[0].url
+        
+        msg = f"URGENT:{media.nom}|{url}"
+        return self._send_to_all_history(msg)
+    # --- GESTION DU PLANNING & CONFIGURATION ---
+    CONFIG_FILE = "scheduler_config.json"
+
+    def _load_config(self):
+        import os
+        import json
+        if not os.path.exists(self.CONFIG_FILE):
+             return {"is_active": False, "matin": None, "apres_midi": None}
+        try:
+            with open(self.CONFIG_FILE, 'r') as f:
+                return json.load(f)
+        except:
+            return {"is_active": False, "matin": None, "apres_midi": None}
+
+    def _save_config(self, config):
+        import json
+        with open(self.CONFIG_FILE, 'w') as f:
+            json.dump(config, f)
+
+    def save_planning(self, matin_id, apres_midi_id):
+        config = self._load_config()
+        config['is_active'] = True
+        config['matin'] = int(matin_id) if matin_id else None
+        config['apres_midi'] = int(apres_midi_id) if apres_midi_id else None
+        self._save_config(config)
+        
+        # Si on réactive, on envoie un signal CANCEL pour lever un potentiel STOP verrouillé sur le client
+        if config['is_active']:
+            self.trigger_cancel_broadcast()
+
+        return True
+
+    def disable_planning(self):
+        """Désactive le mode automatique (Silence)"""
+        config = self._load_config()
+        config['is_active'] = False
+        self._save_config(config)
+        return True
+
+    def get_planning(self):
+        return self._load_config()
+
+    def reset_all_players(self):
+        """Réinitialisation totale : Efface historique et coupe le son"""
+        # 1. Désactiver le planning
+        self.disable_planning()
+        
+        # 2. Nettoyer l'historique de tous les lecteurs
         lecteurs = Lecteur.query.all()
         for l in lecteurs:
-            l.historique = message
+            l.historique = None # Clean slate
+        
         db.session.commit()
+        
+        # 3. Envoyer un STOP explicite au cas où
+        self.trigger_stop_music()
         return True
