@@ -1,5 +1,6 @@
 from app.models.Lecteur import Lecteur
 from app.models.Playlist import Playlist
+from app.models.Media import Media
 from app.extensions import db
 from datetime import datetime
 
@@ -25,22 +26,28 @@ class DeviceService:
             
         lecteur.derniere_sync = datetime.utcnow()
         lecteur.statut = 'ok'
-        # les données peuvent être None si request.json est None, à manipuler avec précaution si nécessaire
-        # Mais le contrôleur passe request.json. 
+        
+        # Logique de réception d'état du client
         if data and data.get('is_audio_playing') is False:
-             # La logique pour l'alerte pourrait aller ici
              pass
+             
+        # RESET Au Démarrage : Si le client dit "je viens de démarrer", on efface son historique d'alertes
+        if data and data.get('startup'):
+            print(f" >> [DeviceService] Client {player_id} redémarré : RESET historique.")
+            lecteur.historique = ""
+            db.session.commit()
+            return { "ok": True, "startup_ack": True }
+
         broadcast_msg = None
-        # Cas 1 : URGENT (Ne pas effacer, boucle infinie)
+        # Cas 1 : URGENT (boucle infinie)
         if "URGENT:" in lecteur.historique:
              broadcast_msg = lecteur.historique.split("URGENT:")[1].strip()
-             # On ajoute un préfixe spécial pour que le client sache que c'est HARDCORE
              broadcast_msg = f"URGENT:{broadcast_msg}"
              
         # Cas 2 : BROADCAST standard (One shot)
         elif "BROADCAST:" in lecteur.historique:
             broadcast_msg = lecteur.historique.split("BROADCAST:")[1].strip()
-            # On marque le message comme lu/livré dans l'historique pour éviter qu'il boucle à l'infini
+            # On marque le message comme lu/livré dans l'historique
             lecteur.historique = f"Dernière diffusion : {broadcast_msg} ({datetime.utcnow().strftime('%H:%M:%S')})"
             
         db.session.commit()
@@ -54,24 +61,47 @@ class DeviceService:
         }
         
     def get_main_playlist_tracks(self, player_id):
-        lecteur = Lecteur.query.get(player_id)
-        if not lecteur:
-             return None
+        # 1. Lire la Configuration
+        # (Import local pour éviter les cycles)
+        from app.services.DashboardService import DashboardService
+        dash_service = DashboardService()
+        config = dash_service.get_planning()
+        
+        # 2. Si Inactif (Mode Manuel pas encore activé) => Silence
+        if not config.get('is_active'):
+             return []
              
-        playlists = Playlist.query.filter_by(id_lecteur=lecteur.id_lecteur).all()
-        tracks = []
-        if playlists:
-            pl = playlists[0]
-            for m in pl.medias:
-                url = ""
-                # En supposant que Media possède une relation 'musiques'
-                if hasattr(m, 'musiques') and m.musiques:
-                     url = m.musiques[0].url
-                
-                tracks.append({
-                    'id': m.id_media,
-                    'title': m.nom,
-                    'file_url': url,
-                    'kind': m.type
-                })
-        return tracks
+        # 3. Logique Horaire
+        now = datetime.now()
+        hour = now.hour
+        target_media_id = None
+        
+        # 08h-12h : Matin
+        if 8 <= hour < 12:
+            target_media_id = config.get('matin')
+        # 12h-20h : Après-midi
+        elif 12 <= hour < 20:
+             target_media_id = config.get('apres_midi')
+        else:
+             # Nuit / Hors plage : Silence
+             return []
+             
+        if not target_media_id:
+             return []
+             
+        # 4. Récupérer le média ciblé
+        media = Media.query.get(target_media_id)
+        if not media: 
+            return []
+            
+        # 5. Construire la réponse (playlist d'un seul titre en boucle)
+        url = ""
+        if hasattr(media, 'musiques') and media.musiques:
+             url = media.musiques[0].url
+        
+        return [{
+            'id': media.id_media,
+            'title': media.nom,
+            'file_url': url,
+            'kind': media.type
+        }]
