@@ -40,14 +40,15 @@ class DeviceService:
 
         broadcast_msg = None
         # Cas 1 : URGENT (boucle infinie)
+        # cas 1 : urgent (boucle infinie)
         if "URGENT:" in lecteur.historique:
              broadcast_msg = lecteur.historique.split("URGENT:")[1].strip()
              broadcast_msg = f"URGENT:{broadcast_msg}"
              
-        # Cas 2 : BROADCAST standard (One shot)
+        # cas 2 : broadcast standard (one shot)
         elif "BROADCAST:" in lecteur.historique:
             broadcast_msg = lecteur.historique.split("BROADCAST:")[1].strip()
-            # On marque le message comme lu/livré dans l'historique
+            # on marque le message comme lu/livre dans l'historique
             lecteur.historique = f"Dernière diffusion : {broadcast_msg} ({datetime.utcnow().strftime('%H:%M:%S')})"
             
         db.session.commit()
@@ -61,40 +62,40 @@ class DeviceService:
         }
         
     def get_main_playlist_tracks(self, player_id):
-        # 1. Lire la Configuration
-        # (Import local pour éviter les cycles)
+        # 1. lire la configuration
+        # (import local pour eviter les cycles)
         from app.services.DashboardService import DashboardService
         dash_service = DashboardService()
         config = dash_service.get_planning()
         
-        # 2. Si Inactif (Mode Manuel pas encore activé) => Silence
+        # 2. si inactif (mode manuel pas encore active) => silence
         if not config.get('is_active'):
              return []
              
-        # 3. Logique Horaire
+        # 3. logique horaire
         now = datetime.now()
         hour = now.hour
         target_media_id = None
         
-        # 08h-12h : Matin
+        # 08h-12h : matin
         if 8 <= hour < 12:
             target_media_id = config.get('matin')
-        # 12h-20h : Après-midi
+        # 12h-20h : apres-midi
         elif 12 <= hour < 20:
              target_media_id = config.get('apres_midi')
         else:
-             # Nuit / Hors plage : Silence
+             # nuit / hors plage : silence
              return []
              
         if not target_media_id:
              return []
              
-        # 4. Récupérer le média ciblé
+        # 4. recuperer le media cible
         media = Media.query.get(target_media_id)
         if not media: 
             return []
             
-        # 5. Construire la réponse (playlist d'un seul titre en boucle)
+        # 5. construire la reponse (playlist d'un seul titre en boucle)
         url = ""
         if hasattr(media, 'musiques') and media.musiques:
              url = media.musiques[0].url

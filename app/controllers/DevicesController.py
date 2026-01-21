@@ -2,12 +2,17 @@ from flask import Blueprint, request, jsonify, redirect, url_for, flash, abort, 
 from flask_login import login_required, current_user
 from app.services.DeviceService import DeviceService
 
-# Instance du service
+"""
+    ce module gère les routes et les fonctionnalités liées aux terminaux (lecteurs).
+    Il inclut les routes pour les terminaux et les routes API pour les terminaux.
+"""
+
+#instance du service
 device_service = DeviceService()
 from functools import wraps
 
 devices_bp = Blueprint('devices', __name__)
-# Point de terminaison API correspondant à l'original api.py
+# point de terminaison api correspondant àl'original api.py
 api_bp = Blueprint('api', __name__)
 
 def admin_required(f):
@@ -18,30 +23,30 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-# --- Routes Admin (Interface Utilisateur) ---
+# --- routes admin (interface utilisateur) ---
 
-# Détail d'un terminal spécifique
+#détail d'un terminal spécifique
 @devices_bp.route('/players/<int:lecteur_id>')
 @login_required
 def player_detail(lecteur_id):
     lecteur = device_service.get_player_or_404(lecteur_id)
-    alerts = [] # Simulation d'alertes vides pour la démo
+    alerts = [] # simulation d'alerte vides pour la démo
     return render_template('player_detail.html', player=lecteur, alerts=alerts)
 
-# Suppression d'un lecteur (Action sensible)
+# suppression d'un lecteur (action sensible)
 @devices_bp.route('/players/delete/<int:lecteur_id>', methods=['POST'])
 @login_required
-@admin_required # Protection maximale : seul l'admin peut supprimer
+@admin_required # protection maximale : seul l'admin peut supprimer
 def delete_lecteur(lecteur_id):
     if device_service.delete_player(lecteur_id):
-        pass # Supprimé avec succès
+        pass #supprimé avec succès
     else:
-        abort(404) # Ou flasher une erreur
+        abort(404) #ou flasher une erreur
     flash('Lecteur supprimé.')
     return redirect(url_for('admin.dashboard'))
 
 
-# --- Routes API (Proviennent de api.py) ---
+# --- Routes API (proviennent de api.py) ---
 
 
 
