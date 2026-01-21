@@ -11,5 +11,4 @@ class Media(db.Model):
     
     # Relations pour le planning et les alertes techniques
     plannings = db.relationship('Planning', backref='media', lazy=True)
-    alertes = db.relationship('Alerte', backref='media', lazy=True)
     musiques = db.relationship('Musique', backref='media', lazy=True)

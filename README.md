@@ -2,13 +2,15 @@
 
 Application web MVC en Python/Flask pour superviser des lecteurs audio distants.
 
-- **Backend**: Flask, SQLAlchemy, Flask-Migrate
-- **Base de Données**: SQLite (dev) ou PostgreSQL (prod)
-- **Frontend**: Bootstrap 5, Jinja2, JS (Polling)
+- **Backend**: Flask 3, SQLAlchemy
+- **Base de Données**: SQLite (fichier local `app.db`)
+- **Frontend**: Bootstrap 5.3 + Jinja2 (Rendu côté serveur)
 
-- `app/models/`: Définition des données (Lecteur, Playlist, Media, etc.)
-- `app/controllers/`: Routes API et Panels Spécifiques
-- `app/templates/` & `app/static/`: Interface Web (Jinja2 / CSS / JS)
+### Structure
+- `app/models/`: Données SQL (Lecteur, Playlist, Media, Musique, Planning)
+- `app/controllers/`: Logique métier par fonctionnalité (Dashboard, Devices, Marketing, Sales, Auth)
+- `app/services/`: Logique métier pure (indépendante du web)
+- `app/templates/`: Vues HTML
 
 ## Installation & Lancement
 
@@ -38,28 +40,31 @@ Application web MVC en Python/Flask pour superviser des lecteurs audio distants.
 
 Authentification via Header `X-API-KEY`.
 
-### 1. Heartbeat
+### 1. Heartbeat (Battement de coeur)
 **POST** `/api/players/<id>/heartbeat`
-Body:
+Body JSON :
 ```json
 {
-  "now_playing": "Title - Artist",
-  "local_main_playlist_hash": "hash_string",
-  "local_fallback_hash": "hash_string",
-  "is_audio_playing": true
+  "is_audio_playing": true,   // État de la lecture
+  "current_track": "http://...", // URL en cours
+  "startup": false           // Si le lecteur vient de redémarrer
 }
 ```
 
-### 2. Récupérer Playlist
+### 2. Récupérer Playlist (Sync)
 **GET** `/api/players/<id>/playlists/main`
-**GET** `/api/players/<id>/playlists/fallback`
+*Retourne la liste des titres à jouer (selon l'heure et le planning).*
 
-### 3. Commandes
-**GET** `/api/players/<id>/commands`
+### 3. Commandes & Réponses
+Le serveur répond au heartbeat avec des instructions :
+- `broadcast_command`: "STOP", "CANCEL", ou "URGENT:Titre"
+- `needs_sync_main`: true (demande de re-télécharger la playlist)
 
 ## Scénarios de Test (Manuel)
 
-1. **Coupure Réseau**: Arrêter d'envoyer des heartbeats pour un lecteur. Attendre 1 minute. Vérifier que le statut passe à KO sur le dashboard.
-2. **Coupure Électrique (Simulée)**: Envoyer un heartbeat avec `"is_audio_playing": false`. Vérifier l'alerte "NO_AUDIO" sur le dashboard.
-3. **Mise à jour Playlist**: Modifier la playlist dans l'admin. Le hash serveur change. Au prochain heartbeat du lecteur (avec l'ancien hash), une alerte "Playlist Outdated" apparaît.
-4. **Planning Pub**: Vérifier via l'API `/api/players/<id>/playlists/main` que des pubs (AD) sont insérées toutes les N musiques.
+## Scénarios de Test (Manuel)
+
+1. **Détection Hors Ligne (Timeout)** : Arrêtez le script `client_sim.py`. Après 15 secondes, rafraîchissez le dashboard : le lecteur passe en **KO (Rouge)**.
+2. **Diffusion Urgente** : Allez dans le menu **Urgences**, choisissez un son et cliquez sur "Diffuser". Le client reçoit l'ordre `URGENT:...` instantanément (au prochain heartbeat).
+3. **Planning Automatique** : Dans **Marketing**, assignez un son au créneau actuel. Le client va recevoir ce son dans sa playlist par défaut.
+4. **Arrêt d'Urgence (Panic Button)** : Sur le Dashboard, cliquez sur **ARRÊTER TOUT LE SON**. Tous les clients reçoivent l'ordre `STOP` et bloquent la lecture.

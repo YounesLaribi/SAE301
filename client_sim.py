@@ -64,7 +64,7 @@ def main():
                         continue
 
                     else:
-                        # Parsing du message "Titre|URL"
+                        # parsing du message "titre|url"
                         title = msg
                         url = None
                         if "|" in msg:
@@ -75,23 +75,23 @@ def main():
                         if url and url.startswith("/"):
                              url = f"{SERVER_URL}{url}"
 
-                        # Logique URGENT vs STANDARD
+                        # logique urgent vs standard
                         is_urgent = msg.startswith("URGENT:")
                         if is_urgent:
-                            # Nettoyage si le préfixe est resté (théoriquement non si géré avant)
+                            # nettoyage si le prefixe est reste (theoriquement non si gere avant)
                             title = title.replace("URGENT:", "")
                             print(f"\n >>> ☢️ ALERTE INFINIE : {title.upper()} ☢️ <<<")
                         else:
                              print(f"\n >>> 🚨 ALERTE REÇUE : {title.upper()} 🚨 <<<")
 
-                        # LECTURE AUDIO RÉELLE (Une seule fois par message)
+                        # lecture audio reelle (une seule fois par message)
                         if url and url != last_played_msg:
-                            # print(f" >>> 🔊 LECTURE AUDIO DÉCLENCHÉE : '{url}'")
+                            # print(f" >>> 🔊 lecture audio declenchee : '{url}'")
                             try:
                                 webbrowser.open(url, new=2)
                             except:
                                 print(" (Erreur ouverture URL)")
-                            last_played_msg = url # On mémorise pour pas spammer les onglets
+                            last_played_msg = url # on memorise pour pas spammer les onglets
 
                         # Logique de boucle
                         manual_stop_active = False
@@ -104,9 +104,9 @@ def main():
                             broadcast_end_time = time.time() + 10 
                             continue
                     
-                # Vérification des commandes ou synchronisation (simulée ici basiquement)
+                # verification des commandes ou synchronisation (simulee ici basiquement)
                 if data.get("needs_sync_main") and not data.get("broadcast_command"):
-                     # On ne sync que si ce n'est pas déjà géré par le broadcast direct
+                     # on ne sync que si ce n'est pas deja gere par le broadcast direct
                     print(" >> Ordre reçu : Synchronisation Playlist demandée !")
                     sync_playlist()
 

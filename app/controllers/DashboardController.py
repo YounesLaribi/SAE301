@@ -2,16 +2,16 @@ from flask import Blueprint, render_template, redirect, url_for, abort, jsonify,
 from flask_login import login_required, current_user
 from app.services.DashboardService import DashboardService
 
-# Initialisation du service
+# initialisation du service
 dashboard_service = DashboardService()
 
-# On garde le nom 'admin' pour le blueprint afin que les redirections 'admin.dashboard' existantes fonctionnent.
-# Si on voulait suivre le nom du fichier strictement, on mettrait 'dashboard', mais limitons les cassures.
+# on garde le nom 'admin' pour le blueprint afin que les redirections 'admin.dashboard' existantes fonctionnent.
+# si on voulait suivre le nom du fichier strictement, on mettrait 'dashboard', mais limitons les cassures.
 admin_bp = Blueprint('admin', __name__)
 
-# Route principale du dashboard
+# route principale du dashboard
 @admin_bp.route('/')
-@login_required # Sécurité : il faut être connecté
+@login_required # sécurité : il faut être connecté
 def dashboard():
     """
     Point d'entrée principal après la connexion. 
@@ -21,19 +21,19 @@ def dashboard():
         return "Erreur: Rôle non défini pour cet utilisateur.", 403
         
     role = current_user.role.nom
-    # Logique de redirection basée sur le rôle (RBAC)
+    # logique de redirection basée sur le rôle (rbac)
     if role == 'Marketing':
         return redirect(url_for('admin.marketing_dashboard'))
     elif role == 'Sales':
         return redirect(url_for('admin.sales_dashboard'))
         
-    # Si c'est un Admin, on prépare les statistiques globales pour la vue d'ensemble
+    # si c'est un admin, on prépare les statistiques globales pour la vue d'ensemble
     stats = dashboard_service.get_admin_stats()
     
-    # Rendu de la page d'accueil Admin avec les données calculées
+    # rendu de la page d'accueil admin avec les données calculées
     return render_template('dashboard.html', **stats)
 
-# Vue technique (Monitoring IT)
+# vue technique (monitoring it)
 @admin_bp.route('/it')
 @login_required
 def monitoring_it():
@@ -44,7 +44,7 @@ def monitoring_it():
     data = dashboard_service.get_monitoring_data()
     return render_template('admin_dashboard.html', **data)
 
-# Vue Marketing
+# vue marketing
 @admin_bp.route('/marketing')
 @login_required
 def marketing_dashboard():
@@ -57,7 +57,7 @@ def marketing_dashboard():
     data = dashboard_service.get_marketing_data()
     return render_template('marketing.html', **data)
 
-# Vue Sales (Commercial)
+# vue sales commercial)
 @admin_bp.route('/sales')
 @login_required
 def sales_dashboard():
@@ -73,7 +73,7 @@ def sales_dashboard():
 @admin_bp.route('/broadcast/stop', methods=['POST'])
 @login_required
 def stop_broadcast():
-    # Arrêt Global (Comportement Marketing/Mute)
+    # Arrêt global(comportement Marketing/Mute)
     dashboard_service.trigger_stop_music()
     flash('Arrêt d\'urgence envoyé à tous les lecteurs.', 'danger')
     return redirect(request.referrer or url_for('admin.dashboard'))
@@ -81,7 +81,7 @@ def stop_broadcast():
 @admin_bp.route('/sales/stop', methods=['POST'])
 @login_required
 def stop_sales():
-    # Arrêt Sales = Annulation de l'annonce en cours (Reprise musique)
+    # Arrêt Sales=Annulation de l'annonce en cours reprise musique)
     dashboard_service.trigger_cancel_broadcast()
     flash('Diffusion Sales annulée. Reprise de la musique.', 'info')
     return redirect(url_for('admin.sales_dashboard'))
@@ -89,7 +89,7 @@ def stop_sales():
 @admin_bp.route('/marketing/stop', methods=['POST'])
 @login_required
 def stop_marketing():
-    # Arrêt Marketing = Désactivation du planning + Silence
+    # arret marketing = desactivation du planning + silence
     dashboard_service.disable_planning()
     dashboard_service.trigger_stop_music()
     flash('Mode Automatique DÉSACTIVÉ. Musique arrêtée (Silence).', 'warning')
@@ -103,7 +103,7 @@ def save_planning():
     
     dashboard_service.save_planning(matin, apres_midi)
     
-    # Récupération des noms pour l'affichage (Plus joli que les ID)
+    # recuperation des noms pour l'affichage (plus joli que les id)
     nom_matin = "Aucun"
     nom_pm = "Aucun"
     
@@ -118,20 +118,20 @@ def save_planning():
     flash(f'Mode Automatique ACTIVÉ. Matin: {nom_matin} / Après-midi: {nom_pm}', 'success')
     return redirect(url_for('admin.marketing_dashboard'))
 
-@admin_bp.route('/marketing/reset', methods=['POST'])
+"""@admin_bp.route('/marketing/reset', methods=['POST'])
 @login_required
 def reset_players():
-    # Réinitialisation forcée (Nettoyage historique + Silence)
+    # reinitialisation force (nettoyage historique+ silence)
     dashboard_service.reset_all_players()
-    flash('Tous les lecteurs ont été réinitialisés (Historique effacé, Son coupé).', 'info')
-    return redirect(url_for('admin.marketing_dashboard'))
+    flash('tous les lecteurs on ete reinitialise (historique efface, son coupe).', 'info')
+    return redirect(url_for('admin.marketing_dashboard'))""" #dead code, fonction de bouton d'arret
 
 @admin_bp.route('/urgent/stop', methods=['POST'])
 @login_required
 def stop_urgent():
-    # Arrêt Urgent = Fin de l'alerte (Reprise musique)
+    # arret urgent = fin de l'alerte (reprise musique)
     dashboard_service.trigger_stop_urgent()
-    flash('Fin de l\'alerte urgente. Reprise de la musique.', 'success')
+    flash('fin de l\'alerte urgente. reprise de la musique.', 'success')
     return redirect(url_for('admin.urgent_dashboard'))
 
 @admin_bp.route('/sales/broadcast', methods=['POST'])
@@ -140,9 +140,9 @@ def sales_broadcast():
     media_id = request.form.get('message')
     if media_id:
         if dashboard_service.trigger_ad_broadcast(media_id):
-             flash('Diffusion publicitaire lancée.', 'warning')
+             flash('diffusion publicitaire lance.', 'warning')
         else:
-             flash('Erreur : Média introuvable.', 'danger')
+             flash('ereur : media introuvable.', 'danger')
     else:
         flash('Erreur : Aucun message sélectionné.', 'danger')
     return redirect(url_for('admin.sales_dashboard'))

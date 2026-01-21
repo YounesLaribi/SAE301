@@ -1,5 +1,5 @@
 from app.models.Lecteur import Lecteur
-from app.models.Alerte import Alerte
+
 from app.models.Media import Media
 from app.models.Playlist import Playlist
 from app.models.Musique import Musique
@@ -8,14 +8,13 @@ from datetime import datetime, time
 
 class DashboardService:
     def _update_player_statuses(self):
-        # Timeout de 15 secondes pour considérer un lecteur comme déconnecté
+        #timeout de 15 secondes pour considerer un lecteur comme deco
         TIMEOUT_SECONDS = 15
         lecteurs = Lecteur.query.all()
         now = datetime.utcnow()
         
         for l in lecteurs:
             if l.derniere_sync:
-                # Calcul basique, on suppose que les dates sont en UTC ou naïves cochées
                 delta = now - l.derniere_sync
                 if delta.total_seconds() > TIMEOUT_SECONDS:
                     l.statut = 'ko'
@@ -32,7 +31,7 @@ class DashboardService:
             'total': Lecteur.query.count(),
             'up': Lecteur.query.filter_by(statut='ok').count(),
             'ko': Lecteur.query.filter_by(statut='ko').count(),
-            'critical': Alerte.query.count(),
+            'critical': 0,
             'total_tracks': Media.query.count(),
             'players': Lecteur.query.all()
         }
@@ -44,8 +43,8 @@ class DashboardService:
              'players': lecteurs,
              'up': Lecteur.query.filter_by(statut='ok').count(),
              'ko': Lecteur.query.filter_by(statut='ko').count(),
-             'critical': Alerte.query.count(),
-             'alerts': Alerte.query.all(),
+             'critical': 0,
+             'alerts': [],
              'total': len(lecteurs)
         }
 
@@ -82,11 +81,11 @@ class DashboardService:
         }
 
     def add_track_to_library(self, title, url, kind):
-        # 0. Récupérer un lecteur pour attacher la playlist (Constraint FK)
+        # 0. recuperer un lecteur pour attacher la playlist (constraint fk)
         lecteur = Lecteur.query.first()
         
         if not lecteur:
-            # Création d'un lecteur système par défaut si aucun n'existe
+            # creation d'un lecteur systeme par defaut si aucun n'existe
             from app.models.Utilisateur import Utilisateur
             admin = Utilisateur.query.filter_by(username='admin').first()
             if admin:
@@ -102,18 +101,18 @@ class DashboardService:
                 db.session.flush()
         
         if not lecteur:
-            # Si toujours pas de lecteur (pas d'admin?), on ne peut pas créer la playlist
+            # si toujours pas de lecteur (pas d'admin?), on ne peut pas creer la playlist
             return None
 
-        # 1. Gestion de la Playlist par défaut
-        # On cherche une playlist "Bibliothèque Globale" associée à ce lecteur
+        # 1. gestion de la playlist par defaut
+        # on cherche une playlist "bibliotheque globale" associee a ce lecteur
         playlist = Playlist.query.filter_by(nom="Bibliothèque Globale").first()
         if not playlist:
             playlist = Playlist(nom="Bibliothèque Globale", version=1, id_lecteur=lecteur.id_lecteur)
             db.session.add(playlist)
-            db.session.flush() # Pour récupérer l'ID
+            db.session.flush() # pour recuperer l'id
             
-        # 2. Création du Média
+        # 2. creation du media
         new_media = Media(
             id_playlist=playlist.id_playlist,
             nom=title,
@@ -123,8 +122,8 @@ class DashboardService:
         db.session.add(new_media)
         db.session.flush()
         
-        # 3. Création du fichier Musique associé
-        # Durée par défaut temporaire (3 mins) car on ne peut pas analyser le fichier pour l'instant
+        # 3. creation du fichier musique associe
+        # duree par defaut temporaire (3 mins) car on ne peut pas analyser le fichier pour l'instant
         default_duration = time(0, 3, 0) 
         
         new_musique = Musique(
@@ -134,7 +133,7 @@ class DashboardService:
         )
         db.session.add(new_musique)
         
-        # 4. Commit final
+        # 4. commit final
         db.session.commit()
         return new_media
 
@@ -145,7 +144,7 @@ class DashboardService:
     def delete_track(self, track_id):
         media = Media.query.get(track_id)
         if media:
-            # Supprimer les musiques associées d'abord (Cascade manuelle si pas définie en DB)
+            # supprimer les musiques associees d'abord (cascade manuelle si pas definie en db)
             Musique.query.filter_by(id_media=track_id).delete()
             db.session.delete(media)
             db.session.commit()
@@ -254,11 +253,9 @@ class DashboardService:
     def get_planning(self):
         return self._load_config()
 
-    def reset_all_players(self):
-        """Réinitialisation totale : Efface historique et coupe le son"""
-        # 1. Désactiver le planning
-        self.disable_planning()
-        
+    #def reset_all_players(self):
+        #self.disable_planning() dead code
+       
         # 2. Nettoyer l'historique de tous les lecteurs
         lecteurs = Lecteur.query.all()
         for l in lecteurs:

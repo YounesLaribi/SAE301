@@ -11,8 +11,8 @@ user_service = UserService()
 # Définition du Blueprint Utilisateur
 user_bp = Blueprint('user', __name__)
 
-# Décorateur personnalisé pour sécuriser l'accès aux administrateurs.
-# (Fonction utilitaire dupliquée ou à déplacer dans utils ? Conservée ici pour le moment car spécifique à la gestion des utilisateurs)
+# décorateur personnalisé pour sécuriser l'accès aux administrateurs.
+# (fonction utilitaire dupliquée ou à déplacer dans utils ? conservée ici pour le moment car spécifique à la gestion des utilisateurs)
 def admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
