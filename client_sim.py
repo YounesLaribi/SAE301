@@ -104,9 +104,10 @@ def play_audio(filename_or_url, loop=False):
         if loop:
             cmd.append("--loop")
             
-        subprocess.Popen(cmd)
+        return subprocess.Popen(cmd)
     except Exception as e:
         print(f" [Erreur MPV] {e}")
+        return None
 
 def stop_audio():
     if SYSTEM == "Windows":
@@ -129,9 +130,18 @@ def main():
     current_track_url = None
     is_playing = False
     is_urgent_mode = False
+    current_process = None
     
     while True:
         try:
+            # --- VERIFICATION FIN LECTURE (AUTO-RESUME) ---
+            if current_process and current_process.poll() is not None:
+                # Le processus est fini
+                if not is_urgent_mode:
+                    print("\n [INFO] Fin de lecture détectée. Retour à la normale.")
+                    is_playing = False
+                    current_track_url = None
+                    current_process = None
             # --- HEARTBEAT ---
             payload = {
                 "is_audio_playing": is_playing,
@@ -160,6 +170,7 @@ def main():
                         is_playing = False
                         current_track_url = None
                         is_urgent_mode = False
+                        current_process = None
 
                 elif cmd == "CANCEL":
                     if is_playing:
@@ -177,7 +188,7 @@ def main():
                     if url != current_track_url:
                         print(f"\n [ORDRE] URGENCE : {url}")
                         sync_files_rsync() 
-                        play_audio(url, loop=True)
+                        current_process = play_audio(url, loop=True)
                         is_playing = True
                         current_track_url = url
                         is_urgent_mode = True
@@ -193,7 +204,7 @@ def main():
                     
                     sync_files_rsync()
                     # Lecture simple (pas de boucle)
-                    play_audio(url, loop=False)
+                    current_process = play_audio(url, loop=False)
                     is_playing = True
                     current_track_url = url
                     # On ne met PAS is_urgent_mode = True car une pub finit toute seule
@@ -211,6 +222,7 @@ def main():
                         is_urgent_mode = False
                         is_playing = False
                         current_track_url = None
+                        current_process = None
 
                     # On demande la playlist standard
                     # Note: Dans une vraie implémentation, on garderait la playlist en mémoire.
