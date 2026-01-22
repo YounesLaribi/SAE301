@@ -159,6 +159,16 @@ def main():
                         stop_audio()
                         is_playing = False
                         current_track_url = None
+                        is_urgent_mode = False
+
+                elif cmd == "CANCEL":
+                    if is_playing:
+                        print("\n [ORDRE] ANNULATION DIFFUSION")
+                        stop_audio()
+                        is_playing = False
+                        current_track_url = None
+                        # Note: is_urgent_mode reste tel quel ou on peut le forcer à False si on veut que CANCEL arrête aussi l'urgence
+                        # Pour l'instant on considère que CANCEL sert surtout pour les Pubs
                 
                 elif cmd and "URGENT:" in cmd:
                     # Licensed urgent code...
