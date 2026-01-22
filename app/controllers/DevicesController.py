@@ -71,7 +71,7 @@ def get_main_playlist(player_id):
 
 @api_bp.route('/players/<int:player_id>/playlists/fallback', methods=['GET'])
 def get_fallback_playlist(player_id):
-    # Liste vide par défaut pour le repli (fallback)
+    #liste vide par défaut pour le repli (fallback)
     return jsonify([])
 
 @api_bp.route('/players/<int:player_id>/commands', methods=['GET'])

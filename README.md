@@ -4,7 +4,7 @@ Application web MVC en Python/Flask pour superviser des lecteurs audio distants.
 
 - **Backend**: Flask 3, SQLAlchemy
 - **Base de Données**: SQLite (fichier local `app.db`)
-- **Frontend**: Bootstrap 5.3 + Jinja2 (Rendu côté serveur)
+- **Frontend**: Bootstrap 5.3 + Jinja2 (Rendu excôté serveur)
 
 ### Structure
 - `app/models/`: Données SQL (Lecteur, Playlist, Media, Musique, Planning)
