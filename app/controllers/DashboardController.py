@@ -44,6 +44,31 @@ def monitoring_it():
     data = dashboard_service.get_monitoring_data()
     return render_template('admin_dashboard.html', **data)
 
+@admin_bp.route('/dashboard/players/add', methods=['POST'])
+@login_required
+def add_player():
+    """
+    Route pour ajouter dynamiquement un lecteur (Nom, IP, Localisation).
+    """
+    # Import local pour éviter cycle éventuel
+    from app.services.DeviceService import DeviceService 
+    device_service = DeviceService()
+    
+    nom = request.form.get('nom')
+    ip = request.form.get('ip') # Optionnel selon la vue
+    localisation = request.form.get('localisation')
+    
+    if nom and localisation:
+        player = device_service.create_player(nom, localisation, ip_address=ip)
+        if player:
+            flash(f'Lecteur "{nom}" ajouté avec succès (ID: {player.id_lecteur}).', 'success')
+        else:
+            flash('Erreur lors de la création du lecteur.', 'danger')
+    else:
+         flash('Champs Nom et Localisation requis.', 'warning')
+         
+    return redirect(url_for('admin.dashboard'))
+
 # vue marketing
 @admin_bp.route('/marketing')
 @login_required

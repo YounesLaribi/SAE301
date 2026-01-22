@@ -132,6 +132,7 @@ def main():
     is_playing = False
     is_urgent_mode = False
     current_process = None
+    manual_stop_req = False # Nouveau flag pour empêcher le redémarrage auto après un STOP
     
     while True:
         try:
@@ -165,13 +166,14 @@ def main():
                 cmd = data.get("broadcast_command")
                 
                 if cmd == "STOP":
-                    if is_playing: # On stop seulement si ça jouait
+                    if is_playing or not manual_stop_req: 
                         print("\n [ORDRE] STOP TOUT !")
                         stop_audio()
                         is_playing = False
                         current_track_url = None
                         is_urgent_mode = False
                         current_process = None
+                        manual_stop_req = True # On marque que l'utilisateur a demandé le silence
 
                 elif cmd == "CANCEL":
                     if is_playing:
@@ -180,8 +182,8 @@ def main():
                         is_playing = False
                         current_track_url = None
                         current_process = None
-                        # Note: is_urgent_mode reste tel quel ou on peut le forcer à False si on veut que CANCEL arrête aussi l'urgence
-                        # Pour l'instant on considère que CANCEL sert surtout pour les Pubs
+                        # IMPORTANT : On VEUT que la musique reprenne après un CANCEL (ex: fin pub anticipée)
+                        manual_stop_req = False 
                 
                 elif cmd and "URGENT:" in cmd:
                     # Licensed urgent code...
@@ -194,6 +196,7 @@ def main():
                         is_playing = True
                         current_track_url = url
                         is_urgent_mode = True
+                        manual_stop_req = False # Urgence force le son
                     else:
                         pass
                 
@@ -209,7 +212,7 @@ def main():
                     current_process = play_audio(url, loop=False)
                     is_playing = True
                     current_track_url = url
-                    # On ne met PAS is_urgent_mode = True car une pub finit toute seule
+                    manual_stop_req = False # Pub force le son
                 
                 # --- SYNC PLAYLIST ---
                 elif data.get("needs_sync_main"):
@@ -227,9 +230,8 @@ def main():
                         current_process = None
 
                     # On demande la playlist standard
-                    # Note: Dans une vraie implémentation, on garderait la playlist en mémoire.
-                    # Ici on fait simple : on demande "quoi jouer" à chaque boucle si on ne joue rien.
-                    if not is_playing: # Si on ne joue rien
+                    # ON VERIFIE SI L'UTILISATEUR N'A PAS DEMANDE LE SILENCE (STOP)
+                    if not is_playing and not manual_stop_req:
                         r = requests.get(f"{SERVER_API_URL}/api/players/{PLAYER_ID}/playlists/main")
                         if r.status_code == 200:
                             tracks = r.json()

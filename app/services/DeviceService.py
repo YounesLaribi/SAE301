@@ -19,13 +19,37 @@ class DeviceService:
             return True
         return False
         
-    def handle_heartbeat(self, player_id, data):
+    def create_player(self, nom, localisation, ip_address=None):
+        try:
+            # On en crée un nouveau directement
+            new_lecteur = Lecteur(
+                id_utilisateur=1, # Default admin user
+                nom=nom,
+                localisation=localisation,
+                ip_address=ip_address,
+                statut='ko',
+                derniere_sync=datetime.utcnow(),
+                historique=""
+            )
+            db.session.add(new_lecteur)
+            db.session.commit()
+            return new_lecteur
+        except Exception as e:
+            print(f"Error creating/updating player: {e}")
+            db.session.rollback()
+            return None
+        
+    def handle_heartbeat(self, player_id, data, client_ip=None):
         lecteur = Lecteur.query.get(player_id)
         if not lecteur:
             return None
             
         lecteur.derniere_sync = datetime.utcnow()
         lecteur.statut = 'ok'
+        
+        # Mise à jour IP si fournie et différente (ou nouvelle)
+        if client_ip and lecteur.ip_address != client_ip:
+            lecteur.ip_address = client_ip
         
         # Logique de réception d'état du client
         if data and data.get('is_audio_playing') is False:

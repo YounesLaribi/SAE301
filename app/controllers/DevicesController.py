@@ -54,7 +54,9 @@ def delete_lecteur(lecteur_id):
 @api_bp.route('/players/<int:player_id>/heartbeat', methods=['POST'])
 def heartbeat(player_id):
     data = request.json
-    response_data = device_service.handle_heartbeat(player_id, data)
+    # On passe l'IP du client pour mise à jour dynamique
+    client_ip = request.remote_addr
+    response_data = device_service.handle_heartbeat(player_id, data, client_ip)
     
     if not response_data:
          return jsonify({'error': 'Unauthorized or Not Found'}), 401
