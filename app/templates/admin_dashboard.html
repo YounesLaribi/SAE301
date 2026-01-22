@@ -46,6 +46,7 @@
                     <thead>
                         <tr>
                             <th>Terminal</th>
+                            <th>IP</th>
                             <th>Localisation</th>
                             <th>Status</th>
                             <th>Dernière sync</th>
@@ -55,6 +56,7 @@
                         {% for p in players %}
                         <tr>
                             <td><strong>{{ p.nom }}</strong></td>
+                            <td><code class="text-primary">{{ p.ip_address or 'N/A' }}</code></td>
                             <td>{{ p.localisation }}</td>
                             <td>
                                 {% if p.statut == 'ok' %}
