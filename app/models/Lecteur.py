@@ -10,5 +10,5 @@ class Lecteur(db.Model):
     derniere_sync = db.Column(db.DateTime(timezone=True), nullable=False)
     historique = db.Column(db.String(255), nullable=False)
     
-    # Relation : Un lecteur possède une playlist active
+    # relationnes : n lecteur possèdfe une playlist active
     playlists = db.relationship('Playlist', backref='lecteur', lazy=True)

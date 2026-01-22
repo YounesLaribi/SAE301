@@ -7,10 +7,11 @@ import subprocess
 import platform
 
 # --- CONFIGURATION (A MODIFIER SELON VOS VMS) ---
-SERVER_IP = "192.168.1.10"       # L'IP de votre VM Serveur
+# --- CONFIGURATION (A MODIFIER SELON VOS VMS) ---
+SERVER_IP = "192.168.1.36"       # L'IP de votre VM Serveur
 SERVER_PORT = "5001"             # Le port Flask
-SERVER_USER = "utilisateur"      # Le nom d'utilisateur SSH de la VM Serveur
-SERVER_PATH = "~/sae301/musiques/" # Le dossier source sur le serveur
+SERVER_USER = "oussama"          # Le nom d'utilisateur SSH de la VM Serveur
+SERVER_PATH = "~/SAE301/app/static/audio/" # Le dossier source sur le serveur
 
 LOCAL_MUSIC_DIR = "musiques_locales" # Dossier local sur le client
 PLAYER_ID = 1
