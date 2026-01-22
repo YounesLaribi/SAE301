@@ -163,7 +163,6 @@ def main():
                     # Format: URGENT:Titre|URL
                     parts = cmd.split("|")
                     url = parts[1] if len(parts) > 1 else ""
-                    
                     if url != current_track_url:
                         print(f"\n [ORDRE] URGENCE : {url}")
                         # On lance une sync rapide au cas où on n'a pas le fichier alerte
@@ -179,27 +178,26 @@ def main():
                 elif data.get("needs_sync_main"):
                     print("\n [INFO] Mise à jour playlist demandée...")
                     sync_files_rsync()
-                
                 # --- LECTURE PROGRAMMEE (Fond) ---
                 else:
                     # On demande la playlist standard
                     # Note: Dans une vraie implémentation, on garderait la playlist en mémoire.
                     # Ici on fait simple : on demande "quoi jouer" à chaque boucle si on ne joue rien.
                     if not is_playing: # Si on ne joue rien
-                         r = requests.get(f"{SERVER_API_URL}/api/players/{PLAYER_ID}/playlists/main")
-                         if r.status_code == 200:
-                             tracks = r.json()
-                             if tracks:
-                                 track = tracks[0]
-                                 url = track['file_url']
+                        r = requests.get(f"{SERVER_API_URL}/api/players/{PLAYER_ID}/playlists/main")
+                        if r.status_code == 200:
+                            tracks = r.json()
+                            if tracks:
+                                track = tracks[0]
+                                url = track['file_url']
                                  
                                  # Si c'est un nouveau titre
-                                 if url != current_track_url:
-                                     print(f"\n [PLAYLIST] Nouvelle piste : {track['title']}")
-                                     sync_files_rsync() # Check rapide
-                                     play_audio(url)
-                                     current_track_url = url
-                                     is_playing = True
+                                if url != current_track_url:
+                                    print(f"\n [PLAYLIST] Nouvelle piste : {track['title']}")
+                                    sync_files_rsync() # Check rapide
+                                    play_audio(url)
+                                    current_track_url = url
+                                    is_playing = True
                                      
             else:
                 print(f" [!] Erreur API: {response.status_code}")

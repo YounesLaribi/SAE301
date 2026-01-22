@@ -80,8 +80,8 @@ class DeviceService:
         # 08h-12h : matin
         if 8 <= hour < 12:
             target_media_id = config.get('matin')
-        # 12h-20h : apres-midi
-        elif 12 <= hour < 20:
+        # 12h-20h : apres-midi (PROLONGÉ JUSQU'A 23H59 POUR TEST)
+        elif 12 <= hour < 24:
              target_media_id = config.get('apres_midi')
         else:
              # nuit / hors plage : silence
