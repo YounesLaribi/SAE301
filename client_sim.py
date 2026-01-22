@@ -7,14 +7,12 @@ import subprocess
 import platform
 
 # --- CONFIGURATION (A MODIFIER SELON VOS VMS) ---
-# --- CONFIGURATION (A MODIFIER SELON VOS VMS) ---
 SERVER_IP = "192.168.1.36"       # L'IP de votre VM Serveur
 SERVER_PORT = "5001"             # Le port Flask
 SERVER_USER = "oussama"          # Le nom d'utilisateur SSH de la VM Serveur
 SERVER_PATH = "~/SAE301/app/static/audio/" # Le dossier source sur le serveur
 
 LOCAL_MUSIC_DIR = "musiques_locales" # Dossier local sur le client
-PLAYER_ID = 1
 HEARTBEAT_INTERVAL = 3
 
 # Construction de l'URL HTTP pour l'API
@@ -51,7 +49,7 @@ def sync_files_rsync():
         if result.returncode == 0:
             # Analyse de la sortie pour voir si des fichiers ont été copiés
             output_lines = result.stdout.strip().splitlines()
-            # On cherche les fichiers (ce qui n'est ni le header ni le footer de stats)
+            # On cherche les fichiers
             files_transferred = [line for line in output_lines 
                                if line.strip() and 
                                not line.startswith("sending incremental file list") and 
@@ -72,32 +70,24 @@ def sync_files_rsync():
         print(f" [Rsync] Exception : {e}")
 
 def play_audio(filename_or_url, loop=False):
-    """Joue un fichier audio.
-       - Sur Linux : Joue le fichier LOCAL via 'mpv' (ou 'mpg123')
-       - Sur Windows : Ouvre l'URL via le navigateur (Mode Dégradé)
-    """
+    """Joue un fichier audio."""
     if SYSTEM == "Windows":
         # Mode Dégradé
         print(f" [Lecture Windows] Ouverture URL : {filename_or_url}")
         webbrowser.open(filename_or_url, new=2)
-        return
+        return "SimulatedProcess"
 
     # Mode PRO (Linux)
-    # On joue le fichier LOCAL qui a été téléchargé par Rsync
-    # On extrait juste le nom du fichier de l'URL (ex: 'http://.../son.mp3' -> 'son.mp3')
     filename = filename_or_url.split("/")[-1] 
     local_path = os.path.join(LOCAL_MUSIC_DIR, filename)
 
     if not os.path.exists(local_path):
         print(f" [Erreur Lecture] Fichier introuvable localement : {local_path}")
         print(" (Avez-vous bien configuré le Rsync ?)")
-        return
+        return None
 
     print(f" [Lecture Linux] Lancement MPV : {local_path} (Loop={loop})")
-    # On lance mpv en arrière plan (ou bloquant si on veut, mais attention au heartbeat)
-    # Ici on utilise Popen pour ne pas bloquer le script
     try:
-        # On tue les anciennes instances mpv pour eviter le capharnaüm (facultatif)
         subprocess.run(["pkill", "mpv"], capture_output=True)
         
         cmd = ["mpv", "--no-terminal", local_path]
@@ -115,35 +105,35 @@ def stop_audio():
     else:
         print(" [Stop] Arrêt du lecteur MPV.")
         subprocess.run(["pkill", "mpv"], capture_output=True)
-        time.sleep(0.5) # Attente pour libérer la ressource audio
-
+        time.sleep(0.5)
 
 def main():
-    print(f"--- CLIENT LECTEUR (ID: {PLAYER_ID}) ---")
+    print(f"--- CLIENT LECTEUR (AUTO-IP) ---")
     print(f"Serveur API : {SERVER_API_URL}")
     print(f"Utilisateur SSH : {SERVER_USER}")
     
     ensure_local_dir()
-    
-    # 1. Sync initiale au démarrage
     sync_files_rsync()
 
     current_track_url = None
     is_playing = False
     is_urgent_mode = False
     current_process = None
-    manual_stop_req = False # Nouveau flag pour empêcher le redémarrage auto après un STOP
+    manual_stop_req = False
+    
+    # ID du joueur récupéré dynamiquement
+    dynamic_player_id = None 
     
     while True:
         try:
             # --- VERIFICATION FIN LECTURE (AUTO-RESUME) ---
-            if current_process and current_process.poll() is not None:
-                # Le processus est fini
+            if current_process and not isinstance(current_process, str) and current_process.poll() is not None:
                 if not is_urgent_mode:
                     print("\n [INFO] Fin de lecture détectée. Retour à la normale.")
                     is_playing = False
                     current_track_url = None
                     current_process = None
+            
             # --- HEARTBEAT ---
             payload = {
                 "is_audio_playing": is_playing,
@@ -152,7 +142,13 @@ def main():
             }
             
             try:
-                response = requests.post(f"{SERVER_API_URL}/api/players/{PLAYER_ID}/heartbeat", json=payload, timeout=2)
+                if dynamic_player_id:
+                     url = f"{SERVER_API_URL}/api/players/{dynamic_player_id}/heartbeat"
+                else:
+                     url = f"{SERVER_API_URL}/api/heartbeat/auto"
+                
+                response = requests.post(url, json=payload, timeout=2)
+                
             except:
                 print(" [!] Serveur injoignable (Timeout)")
                 time.sleep(HEARTBEAT_INTERVAL)
@@ -160,9 +156,14 @@ def main():
 
             if response.status_code == 200:
                 data = response.json()
-                print(".", end="", flush=True) # Petit point pour dire "je suis vivant"
+                print(".", end="", flush=True)
                 
-                # --- COMMANDES (STOP/URGENT) ---
+                # Si le serveur nous a donné notre ID, on le stocke
+                if 'player_id' in data and not dynamic_player_id:
+                    dynamic_player_id = data['player_id']
+                    print(f"\n [INFO] Authentifié avec succès ! (PLAYER ID: {dynamic_player_id})")
+                
+                # --- COMMANDES ---
                 cmd = data.get("broadcast_command")
                 
                 if cmd == "STOP":
@@ -173,7 +174,7 @@ def main():
                         current_track_url = None
                         is_urgent_mode = False
                         current_process = None
-                        manual_stop_req = True # On marque que l'utilisateur a demandé le silence
+                        manual_stop_req = True
 
                 elif cmd == "CANCEL":
                     if is_playing:
@@ -182,11 +183,9 @@ def main():
                         is_playing = False
                         current_track_url = None
                         current_process = None
-                        # IMPORTANT : On VEUT que la musique reprenne après un CANCEL (ex: fin pub anticipée)
                         manual_stop_req = False 
                 
                 elif cmd and "URGENT:" in cmd:
-                    # Licensed urgent code...
                     parts = cmd.split("|")
                     url = parts[1] if len(parts) > 1 else ""
                     if url != current_track_url:
@@ -196,31 +195,22 @@ def main():
                         is_playing = True
                         current_track_url = url
                         is_urgent_mode = True
-                        manual_stop_req = False # Urgence force le son
-                    else:
-                        pass
-                
-                # --- PUBLICITÉ / BROADCAST STANDARD ---
+                        manual_stop_req = False
+
                 elif cmd:
-                    # Si on reçoit une commande qui n'est ni STOP ni URGENT, c'est une PUB
                     parts = cmd.split("|")
                     url = parts[1] if len(parts) > 1 else ""
                     print(f"\n [ORDRE] PUBLICITÉ : {url}")
-                    
                     sync_files_rsync()
-                    # Lecture simple (pas de boucle)
                     current_process = play_audio(url, loop=False)
                     is_playing = True
                     current_track_url = url
-                    manual_stop_req = False # Pub force le son
-                
-                # --- SYNC PLAYLIST ---
+                    manual_stop_req = False
+
                 elif data.get("needs_sync_main"):
                     print("\n [INFO] Mise à jour playlist demandée...")
                     sync_files_rsync()
-                # --- LECTURE PROGRAMMEE (Fond) ---
                 else:
-                    # Si on sort d'une mode URGENCE (le serveur n'envoie plus URGENT), on doit couper
                     if is_urgent_mode:
                         print("\n [INFO] Fin de l'urgence. Arrêt de l'alarme.")
                         stop_audio()
@@ -229,30 +219,29 @@ def main():
                         current_track_url = None
                         current_process = None
 
-                    # On demande la playlist standard
-                    # ON VERIFIE SI L'UTILISATEUR N'A PAS DEMANDE LE SILENCE (STOP)
-                    if not is_playing and not manual_stop_req:
-                        r = requests.get(f"{SERVER_API_URL}/api/players/{PLAYER_ID}/playlists/main")
+                    if not is_playing and not manual_stop_req and dynamic_player_id:
+                        r = requests.get(f"{SERVER_API_URL}/api/players/{dynamic_player_id}/playlists/main")
                         if r.status_code == 200:
                             tracks = r.json()
                             if tracks:
                                 track = tracks[0]
                                 url = track['file_url']
-                                 
-                                # Si c'est un nouveau titre
                                 if url != current_track_url:
                                     print(f"\n [PLAYLIST] Nouvelle piste : {track['title']}")
-                                    sync_files_rsync() # Check rapide
+                                    sync_files_rsync()
                                     proc = play_audio(url)
                                     if proc:
                                         current_process = proc
                                         current_track_url = url
                                         is_playing = True
                                     else:
-                                        print(" [ERREUR] Echec lancement audio (Background)")
                                         is_playing = False
                                         current_track_url = None
-                                     
+            
+            elif response.status_code == 403:
+                # IP Inconnue
+                if not dynamic_player_id:
+                     print(" [!] Client non reconnu par le serveur (IP not registered). En attente...", end="\r")
             else:
                 print(f" [!] Erreur API: {response.status_code}")
 

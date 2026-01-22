@@ -84,6 +84,29 @@ class DeviceService:
             "needs_sync_fallback": False,
             "broadcast_command": broadcast_msg
         }
+
+    def handle_auto_heartbeat(self, client_ip, data):
+        """ Trouve le lecteur par IP et traite le heartbeat """
+        if not client_ip:
+            return None
+            
+        # Recherche par IP
+        lecteur = Lecteur.query.filter_by(ip_address=client_ip).first()
+        
+        if not lecteur:
+            # Optionnel : Auto-create "Inconnu" ?
+            # Pour l'instant on retourne None => 403
+            # ou on le log pour debug
+            print(f" [AutoHeartbeat] IP inconnu : {client_ip}")
+            return None
+            
+        print(f" [AutoHeartbeat] Lecteur identifié : {lecteur.nom} (ID: {lecteur.id_lecteur}) via IP {client_ip}")
+        # On délègue au heartbeat standard, 
+        # on renvoie aussi l'ID pour que le client puisse se configurer s'il est malin (optionnel)
+        response = self.handle_heartbeat(lecteur.id_lecteur, data, client_ip)
+        if response:
+            response['player_id'] = lecteur.id_lecteur # On donne son ID au client
+        return response
         
     def get_main_playlist_tracks(self, player_id):
         # 1. lire la configuration

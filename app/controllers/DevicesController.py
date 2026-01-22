@@ -63,6 +63,23 @@ def heartbeat(player_id):
          
     return jsonify(response_data)
 
+@api_bp.route('/heartbeat/auto', methods=['POST'])
+def auto_heartbeat():
+    """
+    Endpoint générique qui identifie le lecteur par son adresse IP source.
+    """
+    data = request.json
+    client_ip = request.remote_addr
+    
+    # On demande au service de trouver ou gérer ce client par IP
+    response_data = device_service.handle_auto_heartbeat(client_ip, data)
+    
+    if not response_data:
+        # Si IP inconnue et qu'on ne veut pas auto-créer, on rejette
+        return jsonify({'error': 'Unknown client IP. Please register in Dashboard.'}), 403
+        
+    return jsonify(response_data)
+
 @api_bp.route('/players/<int:player_id>/playlists/main', methods=['GET'])
 def get_main_playlist(player_id):
     tracks = device_service.get_main_playlist_tracks(player_id)
