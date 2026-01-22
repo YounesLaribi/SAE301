@@ -49,8 +49,22 @@ def sync_files_rsync():
     try:
         result = subprocess.run(cmd, capture_output=True, text=True)
         if result.returncode == 0:
-            print(" [Rsync] Succès ! Fichiers à jour.")
-            # print(result.stdout) # Decommenter pour le debug
+            # Analyse de la sortie pour voir si des fichiers ont été copiés
+            output_lines = result.stdout.strip().splitlines()
+            # On cherche les fichiers (ce qui n'est ni le header ni le footer de stats)
+            files_transferred = [line for line in output_lines 
+                               if line.strip() and 
+                               not line.startswith("sending incremental file list") and 
+                               not line.startswith("sent ") and 
+                               not line.startswith("total size is") and
+                               not line.startswith("speedup is")]
+
+            if files_transferred:
+                print(f" [Rsync] Mise à jour effectuée ({len(files_transferred)} fichiers).")
+                for f in files_transferred:
+                    print(f"   + {f}")
+            else:
+                print(" [Rsync] Déjà à jour (Aucun changement nécessaire).")
         else:
             print(" [Rsync] ERREUR !")
             print(result.stderr)
