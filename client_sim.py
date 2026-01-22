@@ -128,6 +128,7 @@ def main():
 
     current_track_url = None
     is_playing = False
+    is_urgent_mode = False
     
     while True:
         try:
@@ -170,6 +171,7 @@ def main():
                         play_audio(url, loop=True)
                         is_playing = True
                         current_track_url = url
+                        is_urgent_mode = True
                     else:
                         # Déjà en train de jouer l'urgence, on ne fait rien
                         pass
@@ -180,6 +182,14 @@ def main():
                     sync_files_rsync()
                 # --- LECTURE PROGRAMMEE (Fond) ---
                 else:
+                    # Si on sort d'une mode URGENCE (le serveur n'envoie plus URGENT), on doit couper
+                    if is_urgent_mode:
+                        print("\n [INFO] Fin de l'urgence. Arrêt de l'alarme.")
+                        stop_audio()
+                        is_urgent_mode = False
+                        is_playing = False
+                        current_track_url = None
+
                     # On demande la playlist standard
                     # Note: Dans une vraie implémentation, on garderait la playlist en mémoire.
                     # Ici on fait simple : on demande "quoi jouer" à chaque boucle si on ne joue rien.
