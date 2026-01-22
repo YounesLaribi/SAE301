@@ -178,6 +178,7 @@ def main():
                         stop_audio()
                         is_playing = False
                         current_track_url = None
+                        current_process = None
                         # Note: is_urgent_mode reste tel quel ou on peut le forcer à False si on veut que CANCEL arrête aussi l'urgence
                         # Pour l'instant on considère que CANCEL sert surtout pour les Pubs
                 
@@ -239,7 +240,7 @@ def main():
                                 if url != current_track_url:
                                     print(f"\n [PLAYLIST] Nouvelle piste : {track['title']}")
                                     sync_files_rsync() # Check rapide
-                                    play_audio(url)
+                                    current_process = play_audio(url)
                                     current_track_url = url
                                     is_playing = True
                                      
