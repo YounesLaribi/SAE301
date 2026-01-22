@@ -71,7 +71,7 @@ def sync_files_rsync():
     except Exception as e:
         print(f" [Rsync] Exception : {e}")
 
-def play_audio(filename_or_url):
+def play_audio(filename_or_url, loop=False):
     """Joue un fichier audio.
        - Sur Linux : Joue le fichier LOCAL via 'mpv' (ou 'mpg123')
        - Sur Windows : Ouvre l'URL via le navigateur (Mode Dégradé)
@@ -93,14 +93,18 @@ def play_audio(filename_or_url):
         print(" (Avez-vous bien configuré le Rsync ?)")
         return
 
-    print(f" [Lecture Linux] Lancement MPV : {local_path}")
+    print(f" [Lecture Linux] Lancement MPV : {local_path} (Loop={loop})")
     # On lance mpv en arrière plan (ou bloquant si on veut, mais attention au heartbeat)
     # Ici on utilise Popen pour ne pas bloquer le script
     try:
         # On tue les anciennes instances mpv pour eviter le capharnaüm (facultatif)
         subprocess.run(["pkill", "mpv"], capture_output=True)
         
-        subprocess.Popen(["mpv", "--no-terminal", local_path])
+        cmd = ["mpv", "--no-terminal", local_path]
+        if loop:
+            cmd.append("--loop")
+            
+        subprocess.Popen(cmd)
     except Exception as e:
         print(f" [Erreur MPV] {e}")
 
@@ -149,22 +153,27 @@ def main():
                 cmd = data.get("broadcast_command")
                 
                 if cmd == "STOP":
-                    print("\n [ORDRE] STOP TOUT !")
-                    stop_audio()
-                    is_playing = False
-                    current_track_url = None
+                    if is_playing: # On stop seulement si ça jouait
+                        print("\n [ORDRE] STOP TOUT !")
+                        stop_audio()
+                        is_playing = False
+                        current_track_url = None
                 
                 elif cmd and "URGENT:" in cmd:
                     # Format: URGENT:Titre|URL
                     parts = cmd.split("|")
                     url = parts[1] if len(parts) > 1 else ""
-                    print(f"\n [ORDRE] URGENCE : {url}")
                     
-                    # On lance une sync rapide au cas où on n'a pas le fichier alerte
-                    sync_files_rsync() 
-                    play_audio(url)
-                    is_playing = True
-                    current_track_url = url
+                    if url != current_track_url:
+                        print(f"\n [ORDRE] URGENCE : {url}")
+                        # On lance une sync rapide au cas où on n'a pas le fichier alerte
+                        sync_files_rsync() 
+                        play_audio(url, loop=True)
+                        is_playing = True
+                        current_track_url = url
+                    else:
+                        # Déjà en train de jouer l'urgence, on ne fait rien
+                        pass
                 
                 # --- SYNC PLAYLIST ---
                 elif data.get("needs_sync_main"):
