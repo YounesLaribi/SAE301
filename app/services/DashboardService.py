@@ -180,14 +180,15 @@ class DashboardService:
         return True
 
     def trigger_stop_music(self):
-        return self._send_to_all_history("BROADCAST: STOP")
+        return self._send_to_all_history("STOP")
 
     def trigger_cancel_broadcast(self):
-        return self._send_to_all_history("BROADCAST: CANCEL")
+        # Cancel sert juste à effacer le message courant pour laisser place à la playlist
+        return self._send_to_all_history("CANCEL")
 
     def trigger_stop_urgent(self):
-        # Pour le stop urgent, on force CANCEL partout
-        return self.trigger_cancel_broadcast()
+        # Pour le stop urgent, on force STOP pour couper le loop client
+        return self.trigger_stop_music()
 
     def trigger_ad_broadcast(self, media_id):
         """Diffusion publicitaire (Sales)"""

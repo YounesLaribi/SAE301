@@ -176,17 +176,17 @@ def main():
                 
                 # --- PUBLICITÉ / BROADCAST STANDARD ---
                 elif cmd:
-                     # Si on reçoit une commande qui n'est ni STOP ni URGENT, c'est une PUB
-                     parts = cmd.split("|")
-                     url = parts[1] if len(parts) > 1 else ""
-                     print(f"\n [ORDRE] PUBLICITÉ : {url}")
-                     
-                     sync_files_rsync()
-                     # Lecture simple (pas de boucle)
-                     play_audio(url, loop=False)
-                     is_playing = True
-                     current_track_url = url
-                     # On ne met PAS is_urgent_mode = True car une pub finit toute seule
+                    # Si on reçoit une commande qui n'est ni STOP ni URGENT, c'est une PUB
+                    parts = cmd.split("|")
+                    url = parts[1] if len(parts) > 1 else ""
+                    print(f"\n [ORDRE] PUBLICITÉ : {url}")
+                    
+                    sync_files_rsync()
+                    # Lecture simple (pas de boucle)
+                    play_audio(url, loop=False)
+                    is_playing = True
+                    current_track_url = url
+                    # On ne met PAS is_urgent_mode = True car une pub finit toute seule
                 
                 # --- SYNC PLAYLIST ---
                 elif data.get("needs_sync_main"):
@@ -213,7 +213,7 @@ def main():
                                 track = tracks[0]
                                 url = track['file_url']
                                  
-                                 # Si c'est un nouveau titre
+                                # Si c'est un nouveau titre
                                 if url != current_track_url:
                                     print(f"\n [PLAYLIST] Nouvelle piste : {track['title']}")
                                     sync_files_rsync() # Check rapide
