@@ -161,20 +161,32 @@ def main():
                         current_track_url = None
                 
                 elif cmd and "URGENT:" in cmd:
-                    # Format: URGENT:Titre|URL
+                    # Licensed urgent code...
                     parts = cmd.split("|")
                     url = parts[1] if len(parts) > 1 else ""
                     if url != current_track_url:
                         print(f"\n [ORDRE] URGENCE : {url}")
-                        # On lance une sync rapide au cas où on n'a pas le fichier alerte
                         sync_files_rsync() 
                         play_audio(url, loop=True)
                         is_playing = True
                         current_track_url = url
                         is_urgent_mode = True
                     else:
-                        # Déjà en train de jouer l'urgence, on ne fait rien
                         pass
+                
+                # --- PUBLICITÉ / BROADCAST STANDARD ---
+                elif cmd:
+                     # Si on reçoit une commande qui n'est ni STOP ni URGENT, c'est une PUB
+                     parts = cmd.split("|")
+                     url = parts[1] if len(parts) > 1 else ""
+                     print(f"\n [ORDRE] PUBLICITÉ : {url}")
+                     
+                     sync_files_rsync()
+                     # Lecture simple (pas de boucle)
+                     play_audio(url, loop=False)
+                     is_playing = True
+                     current_track_url = url
+                     # On ne met PAS is_urgent_mode = True car une pub finit toute seule
                 
                 # --- SYNC PLAYLIST ---
                 elif data.get("needs_sync_main"):
