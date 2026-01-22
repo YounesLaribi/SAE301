@@ -115,6 +115,7 @@ def stop_audio():
     else:
         print(" [Stop] Arrêt du lecteur MPV.")
         subprocess.run(["pkill", "mpv"], capture_output=True)
+        time.sleep(0.5) # Attente pour libérer la ressource audio
 
 
 def main():
@@ -240,9 +241,15 @@ def main():
                                 if url != current_track_url:
                                     print(f"\n [PLAYLIST] Nouvelle piste : {track['title']}")
                                     sync_files_rsync() # Check rapide
-                                    current_process = play_audio(url)
-                                    current_track_url = url
-                                    is_playing = True
+                                    proc = play_audio(url)
+                                    if proc:
+                                        current_process = proc
+                                        current_track_url = url
+                                        is_playing = True
+                                    else:
+                                        print(" [ERREUR] Echec lancement audio (Background)")
+                                        is_playing = False
+                                        current_track_url = None
                                      
             else:
                 print(f" [!] Erreur API: {response.status_code}")
