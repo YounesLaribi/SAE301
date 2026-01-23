@@ -17,4 +17,4 @@ if __name__ == '__main__':
     # Lancement du serveur de développement.
     # debug=True permet de voir les erreurs en direct.
     # port=5001 pour éviter les conflits réseau.
-    app.run(debug=True, port=5001)
+    app.run(host='0.0.0.0', debug=True, port=5001)

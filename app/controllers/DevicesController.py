@@ -54,11 +54,30 @@ def delete_lecteur(lecteur_id):
 @api_bp.route('/players/<int:player_id>/heartbeat', methods=['POST'])
 def heartbeat(player_id):
     data = request.json
-    response_data = device_service.handle_heartbeat(player_id, data)
+    # On passe l'IP du client pour mise à jour dynamique
+    client_ip = request.remote_addr
+    response_data = device_service.handle_heartbeat(player_id, data, client_ip)
     
     if not response_data:
          return jsonify({'error': 'Unauthorized or Not Found'}), 401
          
+    return jsonify(response_data)
+
+@api_bp.route('/heartbeat/auto', methods=['POST'])
+def auto_heartbeat():
+    """
+    Endpoint générique qui identifie le lecteur par son adresse IP source.
+    """
+    data = request.json
+    client_ip = request.remote_addr
+    
+    # On demande au service de trouver ou gérer ce client par IP
+    response_data = device_service.handle_auto_heartbeat(client_ip, data)
+    
+    if not response_data:
+        # Si IP inconnue et qu'on ne veut pas auto-créer, on rejette
+        return jsonify({'error': 'Unknown client IP. Please register in Dashboard.'}), 403
+        
     return jsonify(response_data)
 
 @api_bp.route('/players/<int:player_id>/playlists/main', methods=['GET'])
@@ -71,7 +90,7 @@ def get_main_playlist(player_id):
 
 @api_bp.route('/players/<int:player_id>/playlists/fallback', methods=['GET'])
 def get_fallback_playlist(player_id):
-    # Liste vide par défaut pour le repli (fallback)
+    #liste vide par défaut pour le repli (fallback)
     return jsonify([])
 
 @api_bp.route('/players/<int:player_id>/commands', methods=['GET'])

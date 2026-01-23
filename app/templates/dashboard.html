@@ -49,15 +49,23 @@
 <div class="row">
     <div class="col-md-8">
         <div class="card shadow-sm border-0 mb-4">
-            <div class="card-header bg-white">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">Sites principaux</h5>
+                <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal"
+                    data-bs-target="#addPlayerModal">
+                    + Ajouter
+                </button>
             </div>
             <div class="card-body">
                 <div class="list-group list-group-flush">
                     {% for p in players[:5] %}
                     <div class="list-group-item d-flex justify-content-between align-items-center">
                         <div>
-                            <span class="fw-bold">{{ p.nom }}</span><br>
+                            <span class="fw-bold">{{ p.nom }}</span>
+                            {% if p.ip_address %}
+                            <span class="badge bg-light text-dark border ms-2 font-monospace">{{ p.ip_address }}</span>
+                            {% endif %}
+                            <br>
                             <small class="text-muted">{{ p.localisation }}</small>
                         </div>
                         <span
@@ -99,3 +107,38 @@
     }
 </style>
 {% endblock %}
+
+<!-- Modal Ajout Lecteur -->
+<div class="modal fade" id="addPlayerModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Ajouter un nouveau lecteur</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ url_for('admin.add_player') }}" method="POST">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="nom" class="form-label">Nom du lecteur</label>
+                        <input type="text" class="form-control" id="nom" name="nom" required
+                            placeholder="Ex: Accueil Principal">
+                    </div>
+                    <div class="mb-3">
+                        <label for="ip" class="form-label">Adresse IP (Optionnel)</label>
+                        <input type="text" class="form-control" id="ip" name="ip" placeholder="Ex: 192.168.1.50">
+                        <div class="form-text">L'adresse IP permet d'identifier l'appareil sur le réseau.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="localisation" class="form-label">Localisation</label>
+                        <input type="text" class="form-control" id="localisation" name="localisation" required
+                            placeholder="Ex: Bâtiment A, Hall">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-primary">Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
