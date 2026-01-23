@@ -83,6 +83,10 @@ def play_audio(filename_or_url, loop=False):
 
     if not os.path.exists(local_path):
         print(f" [Erreur Lecture] Fichier introuvable localement : {local_path}")
+        try:
+            print(f"   [DEBUG] Contenu du dossier '{LOCAL_MUSIC_DIR}' : {os.listdir(LOCAL_MUSIC_DIR)}")
+        except:
+             print("   [DEBUG] Dossier inaccessible.")
         print(" (Avez-vous bien configuré le Rsync ?)")
         return None
 

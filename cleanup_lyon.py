@@ -4,7 +4,6 @@ from app.models.Lecteur import Lecteur
 app = create_app()
 with app.app_context():
     try:
-        # Recherche floue ou exacte
         lyon = Lecteur.query.filter(Lecteur.localisation.ilike('%Lyon%')).first()
         if not lyon:
             lyon = Lecteur.query.filter(Lecteur.nom.ilike('%Lyon%')).first()

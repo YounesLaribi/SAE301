@@ -9,5 +9,4 @@ class Playlist(db.Model):
     date_mise_a_jour = db.Column(db.DateTime(timezone=True), nullable=False, default=datetime.utcnow)
     id_lecteur = db.Column(db.Integer, db.ForeignKey('Lecteur.id_lecteur'), nullable=False)
     
-    # Relation : Une playlist contient plusieurs médias
     medias = db.relationship('Media', backref='playlist', lazy=True)

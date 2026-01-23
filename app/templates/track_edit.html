@@ -13,7 +13,6 @@
 
             <div class="mb-3">
                 <label class="form-label">URL du fichier</label>
-                <!-- pre-remplissage url du premier fichier musique si existe -->
                 <input type="text" class="form-control" name="url"
                     value="{{ track.musiques[0].url if track.musiques else '' }}" required>
             </div>
