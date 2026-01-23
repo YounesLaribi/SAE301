@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <h2 class="display-5">Supervision & Administration</h2>
+        <p class="text-muted">Monitoring technique des terminaux Raspberry Pi et état du réseau.</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <div class="card shadow-sm border-0">
+            <div class="card-body bg-dark text-white rounded">
+                <div class="row text-center">
+                    <div class="col-md-4">
+                        <small class="text-secondary text-uppercase">État serveur</small>
+                        <h4 class="text-success">HeyDo-HQ (Online)</h4>
+                    </div>
+                    <div class="col-md-4">
+                        <small class="text-secondary text-uppercase">Protocole de sync</small>
+                        <h4>HTTP/RSYNC</h4>
+                    </div>
+                    <div class="col-md-4">
+                        <small class="text-secondary text-uppercase">Temps atomique (NTP)</small>
+                        <h4 id="clock">--:--:--</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-8">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">Statut des terminaux (Raspberry)</h5>
+                <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal"
+                    data-bs-target="#addPlayerModal">
+                    + Ajouter
+                </button>
+            </div>
+            <div class="card-body">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Terminal</th>
+                            <th>IP</th>
+                            <th>Localisation</th>
+                            <th>Status</th>
+                            <th>Dernière sync</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in players %}
+                        <tr>
+                            <td><strong>{{ p.nom }}</strong></td>
+                            <td><code class="text-primary">{{ p.ip_address or 'N/A' }}</code></td>
+                            <td>{{ p.localisation }}</td>
+                            <td>
+                                {% if p.statut == 'ok' %}
+                                <span class="badge bg-success">CONNECTED</span>
+                                {% else %}
+                                <span class="badge bg-danger">KO (NETWORK)</span>
+                                {% endif %}
+                            </td>
+                            <td><small class="text-muted">{{ p.derniere_sync.strftime('%H:%M:%S') }}</small></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0">Historique des pannes (alertes)</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    {% for alert in alerts %}
+                    <div class="list-group-item">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1 text-danger">Panne détectée</h6>
+                            <small>Il y a 2m</small>
+                        </div>
+                        <p class="mb-1 small">{{ alert.message }}</p>
+                        <small class="text-muted">Code: {{ alert.type }}</small>
+                    </div>
+                    {% else %}
+                    <div class="p-3 text-center text-muted">
+                        <small>Aucune panne détectée sur les dernières 24h.</small>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function updateClock() {
+        document.getElementById('clock').innerText = new Date().toLocaleTimeString();
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+</script>
+<div class="modal fade" id="addPlayerModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Ajouter un nouveau lecteur</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ url_for('admin.add_player') }}" method="POST">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="nom" class="form-label">Nom du lecteur</label>
+                        <input type="text" class="form-control" id="nom" name="nom" required
+                            placeholder="Ex: Accueil Principal">
+                    </div>
+                    <div class="mb-3">
+                        <label for="ip" class="form-label">Adresse IP (Optionnel)</label>
+                        <input type="text" class="form-control" id="ip" name="ip" placeholder="Ex: 192.168.1.50">
+                        <div class="form-text">L'adresse IP est capturée automatiquement lors de la première connexion
+                            si laissée vide.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="localisation" class="form-label">Localisation</label>
+                        <input type="text" class="form-control" id="localisation" name="localisation" required
+                            placeholder="Ex: Bâtiment A, Hall">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-primary">Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

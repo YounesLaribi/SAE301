@@ -1,3 +1,4 @@
+# Modele representant le fichier physique (URL) associe a un Media.
 from app.extensions import db
 
 class Musique(db.Model):

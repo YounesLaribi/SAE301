@@ -1,3 +1,4 @@
+# Script utilitaire pour executer des migrations SQL manuelles ou correctifs sur la base de donnees.
 from app import create_app, db
 from sqlalchemy import text
 

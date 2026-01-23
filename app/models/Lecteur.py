@@ -1,3 +1,4 @@
+#lodele representant un terminal Raspberry Pi (Lecteur).
 from app.extensions import db
 
 class Lecteur(db.Model):

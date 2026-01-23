@@ -1,3 +1,4 @@
+# Fichier d'initialisation de l'application Flask. Configure les extensions et enregistre les blueprints.
 from flask import Flask
 from config import Config
 from app.extensions import db, migrate, login_manager

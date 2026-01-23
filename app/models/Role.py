@@ -1,3 +1,4 @@
+#Modele representant le role d'un utilisateur.
 from app.extensions import db
 
 class Role(db.Model):

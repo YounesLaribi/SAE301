@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <h2 class="display-5 text-danger">Messages prioritaires</h2>
+        <p class="text-muted">Gestion des urgences et diffusions prioritaires.</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-5">
+        <div class="card border-danger shadow-lg mb-4">
+            <div class="card-header bg-danger text-white">
+                <h5 class="card-title mb-0">Diffusion immédiate</h5>
+            </div>
+            <div class="card-body">
+                <p class="small text-muted">Avertissement : Cette action coupera immédiatement le programme en cours sur
+                    TOUS les lecteurs.</p>
+                <form action="{{ url_for('admin.urgent_broadcast') }}" method="POST">
+                    <div class="mb-3">
+                        <label class="form-label">Choisir le message prioritaire</label>
+                        <select class="form-select border-danger" name="message">
+                            {% for track in urgent_tracks %}
+                            <option value="{{ track.id_media }}">{{ track.nom }}</option>
+                            {% else %}
+                            <option disabled>Aucun message urgent disponible</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-danger w-100 py-3 fw-bold mb-3">DIFFUSER MAINTENANT</button>
+                </form>
+                <form action="{{ url_for('admin.stop_urgent') }}" method="POST">
+                    <button type="submit" class="btn btn-danger w-100 fw-bold">
+                        <i class="bi bi-power"></i> ARRÊTER L'ALERTE
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-7">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0">Catalogue des urgences</h5>
+            </div>
+            <div class="card-body">
+                <table class="table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Titre</th>
+                            <th>Fichier</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for track in urgent_tracks %}
+                        <tr>
+                            <td>{{ track.nom }}</td>
+                            <td>{{ track.musiques[0].url if track.musiques else '-' }}</td>
+                            <td>
+                                {% if track.musiques and track.musiques[0].url %}
+                                <a href="{{ track.musiques[0].url }}" target="_blank"
+                                    class="btn btn-sm btn-outline-danger">
+                                    <i class="bi bi-play-fill"></i> Écouter
+                                </a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="3" class="text-center text-muted">Aucun message configuré. Ajoutez-en via
+                                "Gérer les titres".</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

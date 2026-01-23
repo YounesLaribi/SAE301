@@ -1,3 +1,4 @@
+#modele representant un contenu (Musique, Pub, Urgence) dans la bibliotheque.
 from app.extensions import db
 
 class Media(db.Model):

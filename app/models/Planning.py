@@ -1,3 +1,4 @@
+# Modele representant la planification de diffusion (Matin, Apres-midi).
 from app.extensions import db
 
 class Planning(db.Model):

@@ -1,3 +1,4 @@
+# Modele representant une liste de lecture associee a un lecteur.
 from app.extensions import db
 from datetime import datetime
 

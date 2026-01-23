@@ -1,3 +1,4 @@
+# Point d'entree principal de l'application Flask. Lance le serveur web.
 from app import create_app, db
 
 app = create_app()

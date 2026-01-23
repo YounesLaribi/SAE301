@@ -1,3 +1,4 @@
+# Configuration de l'application (Variables d'environnement, Base de donnees, Securite).
 import os
 
 class Config:
