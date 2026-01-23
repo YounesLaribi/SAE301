@@ -15,7 +15,7 @@
                 <h5 class="card-title mb-0">Diffusion</h5>
             </div>
             <div class="card-body">
-                <form action="{{ url_for('admin.save_planning') }}" method="POST">
+                <form action="{{ url_for('admin.sauvegarder_planning') }}" method="POST">
                     <div class="mb-3">
                         <label class="form-label fw-bold"><i class="bi bi-sunrise"></i> Matin (8h - 12h)</label>
                         <select class="form-select" name="matin">
@@ -45,7 +45,7 @@
                     </button>
                 </form>
 
-                <form action="{{ url_for('admin.stop_marketing') }}" method="POST" class="mb-3">
+                <form action="{{ url_for('admin.arreter_marketing') }}" method="POST" class="mb-3">
                     <button type="submit" class="btn btn-danger w-100 fw-bold">
                         <i class="bi bi-power"></i> DÉSACTIVER (OFF) & STOP
                     </button>

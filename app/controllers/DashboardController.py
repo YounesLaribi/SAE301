@@ -8,15 +8,15 @@ admin_bp = Blueprint('admin', __name__)
 
 @admin_bp.route('/')
 @login_required
-def dashboard():
+def tableau_de_bord():
     if not current_user.role:
         return "Erreur: Rôle non défini pour cet utilisateur.", 403
         
     role = current_user.role.nom
     if role == 'Marketing':
-        return redirect(url_for('admin.marketing_dashboard'))
+        return redirect(url_for('admin.tableau_bord_marketing'))
     elif role == 'Sales':
-        return redirect(url_for('admin.sales_dashboard'))
+        return redirect(url_for('admin.tableau_bord_ventes'))
         
     stats = dashboard_service.get_admin_stats()
     
@@ -24,13 +24,13 @@ def dashboard():
 
 @admin_bp.route('/it')
 @login_required
-def monitoring_it():
+def surveillance_it():
     data = dashboard_service.get_monitoring_data()
     return render_template('admin_dashboard.html', **data)
 
 @admin_bp.route('/dashboard/players/add', methods=['POST'])
 @login_required
-def add_player():
+def ajouter_lecteur():
     from app.services.DeviceService import DeviceService 
     device_service = DeviceService()
     
@@ -47,11 +47,11 @@ def add_player():
     else:
          flash('Champs Nom et Localisation requis.', 'warning')
          
-    return redirect(url_for('admin.dashboard'))
+    return redirect(url_for('admin.tableau_de_bord'))
 
 @admin_bp.route('/marketing')
 @login_required
-def marketing_dashboard():
+def tableau_bord_marketing():
     if current_user.role.nom not in ['Admin', 'Marketing']:
         abort(403)
     data = dashboard_service.get_marketing_data()
@@ -59,7 +59,7 @@ def marketing_dashboard():
 
 @admin_bp.route('/sales')
 @login_required
-def sales_dashboard():
+def tableau_bord_ventes():
     if current_user.role.nom not in ['Admin', 'Sales']:
         abort(403)
     data = dashboard_service.get_sales_data()
@@ -67,29 +67,29 @@ def sales_dashboard():
 
 @admin_bp.route('/broadcast/stop', methods=['POST'])
 @login_required
-def stop_broadcast():
+def arreter_diffusion():
     dashboard_service.trigger_stop_music()
     flash('Arrêt d\'urgence envoyé à tous les lecteurs.', 'danger')
-    return redirect(request.referrer or url_for('admin.dashboard'))
+    return redirect(request.referrer or url_for('admin.tableau_de_bord'))
 
 @admin_bp.route('/sales/stop', methods=['POST'])
 @login_required
-def stop_sales():
+def arreter_ventes():
     dashboard_service.trigger_cancel_broadcast()
     flash('Diffusion Sales annulée. Reprise de la musique.', 'info')
-    return redirect(url_for('admin.sales_dashboard'))
+    return redirect(url_for('admin.tableau_bord_ventes'))
 
 @admin_bp.route('/marketing/stop', methods=['POST'])
 @login_required
-def stop_marketing():
+def arreter_marketing():
     dashboard_service.disable_planning()
     dashboard_service.trigger_stop_music()
     flash('Mode Automatique DÉSACTIVÉ. Musique arrêtée (Silence).', 'warning')
-    return redirect(url_for('admin.marketing_dashboard'))
+    return redirect(url_for('admin.tableau_bord_marketing'))
 
 @admin_bp.route('/marketing/planning/save', methods=['POST'])
 @login_required
-def save_planning():
+def sauvegarder_planning():
     matin = request.form.get('matin')
     apres_midi = request.form.get('apres_midi')
     
@@ -107,18 +107,18 @@ def save_planning():
         if m: nom_pm = m.nom
     
     flash(f'Mode Automatique ACTIVÉ. Matin: {nom_matin} / Après-midi: {nom_pm}', 'success')
-    return redirect(url_for('admin.marketing_dashboard'))
+    return redirect(url_for('admin.tableau_bord_marketing'))
 
 @admin_bp.route('/urgent/stop', methods=['POST'])
 @login_required
-def stop_urgent():
+def arreter_urgence():
     dashboard_service.trigger_stop_urgent()
     flash('fin de l\'alerte urgente. reprise de la musique.', 'success')
-    return redirect(url_for('admin.urgent_dashboard'))
+    return redirect(url_for('admin.tableau_bord_urgence'))
 
 @admin_bp.route('/sales/broadcast', methods=['POST'])
 @login_required
-def sales_broadcast():
+def diffuser_vente():
     media_id = request.form.get('message')
     if media_id:
         if dashboard_service.trigger_ad_broadcast(media_id):
@@ -127,22 +127,22 @@ def sales_broadcast():
              flash('ereur : media introuvable.', 'danger')
     else:
         flash('Erreur : Aucun message sélectionné.', 'danger')
-    return redirect(url_for('admin.sales_dashboard'))
+    return redirect(url_for('admin.tableau_bord_ventes'))
 
 @admin_bp.route('/api/admin/summary')
 @login_required
-def summary():
+def resume():
     return jsonify(dashboard_service.get_summary_json())
 
 @admin_bp.route('/media')
 @login_required
-def tracks():
+def titres():
     medias = dashboard_service.get_all_tracks()
     return render_template('tracks.html', tracks=medias)
 
 @admin_bp.route('/media/add', methods=['POST'])
 @login_required
-def add_track():
+def ajouter_titre():
     title = request.form.get('title')
     url = request.form.get('url')
     kind = request.form.get('kind')
@@ -153,11 +153,11 @@ def add_track():
     else:
         flash('Erreur: Titre et URL requis.', 'danger')
         
-    return redirect(url_for('admin.tracks'))
+    return redirect(url_for('admin.titres'))
 
 @admin_bp.route('/media/delete/<int:track_id>', methods=['POST'])
 @login_required
-def delete_track(track_id):
+def supprimer_titre(track_id):
     if current_user.role.nom != 'Admin':
         abort(403)
         
@@ -166,11 +166,11 @@ def delete_track(track_id):
     else:
         flash('Erreur lors de la suppression.', 'danger')
         
-    return redirect(url_for('admin.tracks'))
+    return redirect(url_for('admin.titres'))
 
 @admin_bp.route('/media/edit/<int:track_id>', methods=['GET', 'POST'])
 @login_required
-def edit_track(track_id):
+def modifier_titre(track_id):
     if current_user.role.nom != 'Admin':
         abort(403)
         
@@ -185,7 +185,7 @@ def edit_track(track_id):
         
         if dashboard_service.update_track(track_id, title, url, kind):
             flash('Titre mis à jour.', 'success')
-            return redirect(url_for('admin.tracks'))
+            return redirect(url_for('admin.titres'))
         else:
             flash('Erreur lors de la modification.', 'danger')
             
@@ -193,22 +193,22 @@ def edit_track(track_id):
 
 @admin_bp.route('/urgent')
 @login_required
-def urgent_dashboard():
+def tableau_bord_urgence():
     data = dashboard_service.get_urgent_data()
     return render_template('urgent.html', **data)
 
 @admin_bp.route('/urgent/broadcast', methods=['POST'])
 @login_required
-def urgent_broadcast():
+def diffuser_urgence():
     media_id = request.form.get('message')
     if media_id:
         dashboard_service.trigger_urgent_broadcast(media_id)
         flash('ALERTE URGENTE DÉCLENCHÉE', 'danger')
     else:
         flash('Erreur : Aucun message sélectionné.', 'danger')
-    return redirect(url_for('admin.urgent_dashboard'))
+    return redirect(url_for('admin.tableau_bord_urgence'))
 
 @admin_bp.route('/check-health')
 @login_required
-def check_health():
-    return redirect(url_for('admin.dashboard'))
+def verifier_sante():
+    return redirect(url_for('admin.tableau_de_bord'))

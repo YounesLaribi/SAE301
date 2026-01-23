@@ -5,7 +5,7 @@ from app.models.Utilisateur import Utilisateur
 auth_bp = Blueprint('auth', __name__)
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
-def login():
+def connexion():
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
@@ -16,7 +16,7 @@ def login():
         
         if user:
             login_user(user)
-            return redirect(url_for('admin.dashboard')) 
+            return redirect(url_for('admin.tableau_de_bord')) 
             
         flash('Identifiant ou mot de passe invalide')
     
@@ -24,6 +24,6 @@ def login():
 
 @auth_bp.route('/logout')
 @login_required
-def logout():
+def deconnexion():
     logout_user()
-    return redirect(url_for('auth.login'))
+    return redirect(url_for('auth.connexion'))

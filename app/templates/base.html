@@ -12,31 +12,31 @@
 <body class="bg-light">
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container-fluid">
-            <a class="navbar-brand" href="{{ url_for('admin.dashboard') }}">HeyDo</a>
+            <a class="navbar-brand" href="{{ url_for('admin.tableau_de_bord') }}">HeyDo</a>
             <div class="collapse navbar-collapse">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('admin.dashboard') }}">Accueil</a>
+                        <a class="nav-link" href="{{ url_for('admin.tableau_de_bord') }}">Accueil</a>
                     </li>
                     {% if current_user.is_authenticated %}
                     {% if current_user.role.nom in ['Admin', 'Marketing'] %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('admin.marketing_dashboard') }}">Marketing</a>
+                        <a class="nav-link" href="{{ url_for('admin.tableau_bord_marketing') }}">Marketing</a>
                     </li>
                     {% endif %}
                     {% if current_user.role.nom in ['Admin', 'Sales'] %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('admin.sales_dashboard') }}">Sales</a>
+                        <a class="nav-link" href="{{ url_for('admin.tableau_bord_ventes') }}">Sales</a>
                     </li>
                     {% endif %}
                     {% if current_user.role.nom == 'Admin' %}
                     <li class="nav-item">
-                        <a class="nav-link text-danger" href="{{ url_for('admin.urgent_dashboard') }}">Urgences</a>
+                        <a class="nav-link text-danger" href="{{ url_for('admin.tableau_bord_urgence') }}">Urgences</a>
                     </li>
                     {% endif %}
                     {% if current_user.role.nom == 'Admin' %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('admin.monitoring_it') }}">Monitoring IT</a>
+                        <a class="nav-link" href="{{ url_for('admin.surveillance_it') }}">Monitoring IT</a>
                     </li>
                     {% endif %}
                     {% endif %}
@@ -48,17 +48,17 @@
                             Administration
                         </a>
                         <ul class="dropdown-menu" aria-labelledby="adminDropdown">
-                            <li><a class="dropdown-item" href="{{ url_for('user.users_list') }}">Gérer les
+                            <li><a class="dropdown-item" href="{{ url_for('user.liste_utilisateurs') }}">Gérer les
                                     utilisateurs</a>
                             </li>
-                            <li><a class="dropdown-item" href="{{ url_for('admin.tracks') }}">Gérer les titres</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('admin.titres') }}">Gérer les titres</a></li>
                         </ul>
                     </li>
                     {% endif %}
 
                 </ul>
                 <div class="d-flex">
-                    <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-light btn-sm">Déconnexion</a>
+                    <a href="{{ url_for('auth.deconnexion') }}" class="btn btn-outline-light btn-sm">Déconnexion</a>
                 </div>
             </div>
         </div>

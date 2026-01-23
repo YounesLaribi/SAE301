@@ -29,7 +29,7 @@
             <div class="card-body text-center py-4">
                 <h6 class="text-muted text-uppercase small">Contenu musical</h6>
                 <h2 class="mb-0">{{ total_tracks }} titres</h2>
-                <p class="text-primary mb-0 mt-2"><a href="{{ url_for('admin.tracks') }}"
+                <p class="text-primary mb-0 mt-2"><a href="{{ url_for('admin.titres') }}"
                         class="text-decoration-none">Gérer la bibliothèque →</a></p>
             </div>
         </div>
@@ -39,7 +39,7 @@
             <div class="card-body text-center py-4">
                 <h6 class="text-muted text-uppercase small">Alertes récentes</h6>
                 <h2 class="mb-0 text-warning">{{ critical }}</h2>
-                <p class="text-primary mb-0 mt-2"><a href="{{ url_for('admin.monitoring_it') }}"
+                <p class="text-primary mb-0 mt-2"><a href="{{ url_for('admin.surveillance_it') }}"
                         class="text-decoration-none">Voir le journal IT →</a></p>
             </div>
         </div>
@@ -85,14 +85,16 @@
             </div>
             <div class="card-body">
                 <div class="d-grid gap-2">
-                    <a href="{{ url_for('admin.marketing_dashboard') }}" class="btn btn-outline-primary text-start">🖥️
+                    <a href="{{ url_for('admin.tableau_bord_marketing') }}"
+                        class="btn btn-outline-primary text-start">🖥️
                         Espace marketing</a>
-                    <a href="{{ url_for('admin.sales_dashboard') }}" class="btn btn-outline-primary text-start">💰
+                    <a href="{{ url_for('admin.tableau_bord_ventes') }}" class="btn btn-outline-primary text-start">💰
                         Espace sales</a>
-                    <a href="{{ url_for('user.users_list') }}" class="btn btn-outline-secondary text-start">👤 Gérer
+                    <a href="{{ url_for('user.liste_utilisateurs') }}" class="btn btn-outline-secondary text-start">👤
+                        Gérer
                         les utilisateurs</a>
                     <hr>
-                    <form action="{{ url_for('admin.stop_broadcast') }}" method="POST">
+                    <form action="{{ url_for('admin.arreter_diffusion') }}" method="POST">
                         <button type="submit" class="btn btn-danger w-100 text-start">🛑 ARRÊTER TOUT LE SON</button>
                     </form>
                 </div>
@@ -115,7 +117,7 @@
                 <h5 class="modal-title">Ajouter un nouveau lecteur</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form action="{{ url_for('admin.add_player') }}" method="POST">
+            <form action="{{ url_for('admin.ajouter_lecteur') }}" method="POST">
                 <div class="modal-body">
                     <div class="mb-3">
                         <label for="nom" class="form-label">Nom du lecteur</label>

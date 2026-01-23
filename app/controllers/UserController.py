@@ -20,7 +20,7 @@ def admin_required(f):
 @user_bp.route('/users')
 @login_required
 @admin_required
-def users_list():
+def liste_utilisateurs():
     users = user_service.get_all_users()
     roles = user_service.get_all_roles()
     return render_template('users.html', users=users, roles=roles)
@@ -28,7 +28,7 @@ def users_list():
 @user_bp.route('/users/add', methods=['POST'])
 @login_required
 @admin_required
-def user_add():
+def ajouter_utilisateur():
     username = request.form.get('username')
     password = request.form.get('password')
     role_id = request.form.get('role_id')
@@ -38,17 +38,17 @@ def user_add():
     if not success:
         flash(message)
         if "existe déjà" in message:
-             return redirect(url_for('user.users_list'))
+             return redirect(url_for('user.liste_utilisateurs'))
     else:
         flash(message)
         
-    return redirect(url_for('user.users_list'))
+    return redirect(url_for('user.liste_utilisateurs'))
 
 @user_bp.route('/users/delete/<int:user_id>', methods=['POST'])
 @login_required
 @admin_required
-def user_delete(user_id):
+def supprimer_utilisateur(user_id):
     success, message = user_service.delete_user(user_id, current_user)
     
     flash(message)
-    return redirect(url_for('user.users_list'))
+    return redirect(url_for('user.liste_utilisateurs'))

@@ -18,7 +18,7 @@ def admin_required(f):
 
 @devices_bp.route('/players/<int:lecteur_id>')
 @login_required
-def player_detail(lecteur_id):
+def detail_lecteur(lecteur_id):
     lecteur = device_service.get_player_or_404(lecteur_id)
     alerts = []
     return render_template('player_detail.html', player=lecteur, alerts=alerts)
@@ -26,16 +26,16 @@ def player_detail(lecteur_id):
 @devices_bp.route('/players/delete/<int:lecteur_id>', methods=['POST'])
 @login_required
 @admin_required
-def delete_lecteur(lecteur_id):
+def supprimer_lecteur(lecteur_id):
     if device_service.delete_player(lecteur_id):
         pass
     else:
         abort(404)
     flash('Lecteur supprimé.')
-    return redirect(url_for('admin.dashboard'))
+    return redirect(url_for('admin.tableau_de_bord'))
 
 @api_bp.route('/players/<int:player_id>/heartbeat', methods=['POST'])
-def heartbeat(player_id):
+def battement_coeur(player_id):
     data = request.json
     client_ip = request.remote_addr
     response_data = device_service.handle_heartbeat(player_id, data, client_ip)
@@ -46,7 +46,7 @@ def heartbeat(player_id):
     return jsonify(response_data)
 
 @api_bp.route('/heartbeat/auto', methods=['POST'])
-def auto_heartbeat():
+def auto_signal():
     data = request.json
     client_ip = request.remote_addr
     
@@ -58,7 +58,7 @@ def auto_heartbeat():
     return jsonify(response_data)
 
 @api_bp.route('/players/<int:player_id>/playlists/main', methods=['GET'])
-def get_main_playlist(player_id):
+def recuperer_playlist_principale(player_id):
     tracks = device_service.get_main_playlist_tracks(player_id)
     if tracks is None:
         return jsonify({'error': 'Unauthorized'}), 401
@@ -66,13 +66,13 @@ def get_main_playlist(player_id):
     return jsonify(tracks)
 
 @api_bp.route('/players/<int:player_id>/playlists/fallback', methods=['GET'])
-def get_fallback_playlist(player_id):
+def recuperer_playlist_secours(player_id):
     return jsonify([])
 
 @api_bp.route('/players/<int:player_id>/commands', methods=['GET'])
-def get_commands(player_id):
+def recuperer_commandes(player_id):
     return jsonify([])
 
 @api_bp.route('/players/<int:player_id>/commands/ack', methods=['POST'])
-def ack_command(player_id):
+def acquitter_commande(player_id):
     return jsonify({'ok': True})
