@@ -1,3 +1,4 @@
+#lodele representant un terminal Raspberry Pi (Lecteur).
 from app.extensions import db
 
 class Lecteur(db.Model):
@@ -5,10 +6,10 @@ class Lecteur(db.Model):
     id_lecteur = db.Column(db.Integer, primary_key=True)
     id_utilisateur = db.Column(db.Integer, db.ForeignKey('Utilisateur.id_utilisateur'), nullable=False)
     nom = db.Column(db.String(100), nullable=False)
+    ip_address = db.Column(db.String(50), nullable=True)
     localisation = db.Column(db.String(200), nullable=False)
-    statut = db.Column(db.String(10), nullable=False, default='ok') # 'ok' ou 'ko' (Monitoring)
+    statut = db.Column(db.String(10), nullable=False, default='ok')
     derniere_sync = db.Column(db.DateTime(timezone=True), nullable=False)
     historique = db.Column(db.String(255), nullable=False)
     
-    # Relation : Un lecteur possède une playlist active
     playlists = db.relationship('Playlist', backref='lecteur', lazy=True)

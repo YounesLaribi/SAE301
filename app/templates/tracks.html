@@ -41,7 +41,6 @@
             <td>{{ track.nom }}</td>
             <td>{{ track.type|upper }}</td>
             <td>
-                <!-- acces a l'url de la musique si disponible -->
                 {% if track.musiques %}
                 {{ track.musiques[0].url }}
                 {% else %}

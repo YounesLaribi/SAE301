@@ -1,3 +1,4 @@
+# Configuration de l'application (Variables d'environnement, Base de donnees, Securite).
 import os
 
 class Config:
@@ -7,6 +8,5 @@ class Config:
         'sqlite:///' + os.path.join(basedir, 'app', 'static', 'app.db')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
-    # Admin settings
     ADMIN_USERNAME = os.environ.get('ADMIN_USERNAME') or 'admin'
     ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD') or 'admin' 

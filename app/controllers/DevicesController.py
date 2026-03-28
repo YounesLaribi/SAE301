@@ -1,18 +1,16 @@
+# controleur pour les appareils (lecteurs). gere le heartbeat et les playlists JSON.
 from flask import Blueprint, request, jsonify, redirect, url_for, flash, abort, render_template
 from flask_login import login_required, current_user
 from app.services.DeviceService import DeviceService
-
-"""
-    ce module gère les routes et les fonctionnalités liées aux terminaux (lecteurs).
-    Il inclut les routes pour les terminaux et les routes API pour les terminaux.
-"""
-
-#instance du service
-device_service = DeviceService()
 from functools import wraps
 
+
+
+
+device_service = DeviceService()
+
+
 devices_bp = Blueprint('devices', __name__)
-# point de terminaison api correspondant àl'original api.py
 api_bp = Blueprint('api', __name__)
 
 def admin_required(f):
@@ -22,31 +20,26 @@ def admin_required(f):
             abort(403)
         return f(*args, **kwargs)
     return decorated_function
-
-# --- routes admin (interface utilisateur) ---
-
-#détail d'un terminal spécifique
 @devices_bp.route('/players/<int:lecteur_id>')
 @login_required
 def player_detail(lecteur_id):
     lecteur = device_service.get_player_or_404(lecteur_id)
-    alerts = [] # simulation d'alerte vides pour la démo
+    alerts = []
     return render_template('player_detail.html', player=lecteur, alerts=alerts)
 
-# suppression d'un lecteur (action sensible)
 @devices_bp.route('/players/delete/<int:lecteur_id>', methods=['POST'])
 @login_required
-@admin_required # protection maximale : seul l'admin peut supprimer
+@admin_required
 def delete_lecteur(lecteur_id):
     if device_service.delete_player(lecteur_id):
-        pass #supprimé avec succès
+        pass
     else:
-        abort(404) #ou flasher une erreur
+        abort(404)
     flash('Lecteur supprimé.')
     return redirect(url_for('admin.dashboard'))
 
 
-# --- Routes API (proviennent de api.py) ---
+
 
 
 
@@ -54,11 +47,24 @@ def delete_lecteur(lecteur_id):
 @api_bp.route('/players/<int:player_id>/heartbeat', methods=['POST'])
 def heartbeat(player_id):
     data = request.json
-    response_data = device_service.handle_heartbeat(player_id, data)
+    client_ip = request.remote_addr
+    response_data = device_service.handle_heartbeat(player_id, data, client_ip)
     
     if not response_data:
-         return jsonify({'error': 'Unauthorized or Not Found'}), 401
-         
+         return jsonify({'error': 'Unauthorized or Not Found'}), 401     
+    return jsonify(response_data)
+
+
+
+@api_bp.route('/heartbeat/auto', methods=['POST'])
+def auto_heartbeat():
+    data = request.json
+    client_ip = request.remote_addr
+    
+    response_data = device_service.handle_auto_heartbeat(client_ip, data)
+    
+    if not response_data:
+        return jsonify({'error': 'Unknown client IP. Please register in Dashboard.'}), 403    
     return jsonify(response_data)
 
 @api_bp.route('/players/<int:player_id>/playlists/main', methods=['GET'])
@@ -66,14 +72,10 @@ def get_main_playlist(player_id):
     tracks = device_service.get_main_playlist_tracks(player_id)
     if tracks is None:
         return jsonify({'error': 'Unauthorized'}), 401
-
     return jsonify(tracks)
-
 @api_bp.route('/players/<int:player_id>/playlists/fallback', methods=['GET'])
 def get_fallback_playlist(player_id):
-    # Liste vide par défaut pour le repli (fallback)
     return jsonify([])
-
 @api_bp.route('/players/<int:player_id>/commands', methods=['GET'])
 def get_commands(player_id):
     return jsonify([])
